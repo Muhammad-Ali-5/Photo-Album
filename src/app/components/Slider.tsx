@@ -31,7 +31,7 @@ export default function Slider({children}:any) {
 
         <div className='mt-14 flex w-full h-full'>
 
-          <div className={`${hov?("z-40"):(mob?(dialog?("z-40"):("z-10 delay-500")):("z-10 delay-500"))} h-full fixed`}>
+          <div className={`${hov?("z-40"):(mob?(dialog?("z-40"):("z-10 delay-200")):("z-10 delay-200"))} h-full fixed`}>
 
         <Side_Nav dialog={dialog} setdialog={setdialog} mob={mob} hov={hov} setmob={setmob} sethov={sethov} />
         {/* <Side_Nav /> */}

@@ -30,7 +30,7 @@ export default function Side_Nav({dialog,setdialog,hov,sethov,mob,setmob}:any) {
           
           <div className="w-full h-full relative">
 
-              <div className='absolute bg-gray-00 top-0'>
+              <div className='absolute bg-gray-00 top-0 w-28'>
 
             <Button onClick={()=>{setdialog(false)}} variant="ghost" className="w-full p-1">
             <Link onClick={()=>{setdialog(false)}} className='flex w-full justify-start items-center gap-2' href="/">
@@ -50,7 +50,7 @@ export default function Side_Nav({dialog,setdialog,hov,sethov,mob,setmob}:any) {
             </Link>
             </Button>
             </div>
-<div className='absolute top-12 bg-gray-00'>
+<div className='absolute top-12 bg-gray-00 w-28'>
             <Button onClick={()=>{setdialog(false)}} variant="ghost" className="w-full p-1">
             <Link href="/albums" className='justify-start flex gap-2 items-center w-full'>
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
@@ -64,7 +64,7 @@ export default function Side_Nav({dialog,setdialog,hov,sethov,mob,setmob}:any) {
             </Button>
             </div>            
             
-            <div className={`bg-gray-00 absolute top-24`}>
+            <div className={`bg-gray-00 absolute top-24 w-28`}>
             <Button onClick={()=>{setdialog(false)}} variant="ghost" className={` w-full  p-1`}>
             <Link href="/favourites" className=' justify-start items-center w-full flex gap-2'>
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
