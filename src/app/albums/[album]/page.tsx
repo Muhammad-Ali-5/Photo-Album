@@ -3,16 +3,17 @@ import CloudinaryImage from "@/app/components/cloudinary-image";
 import { delete_folder, get_img_from_folder } from "@/app/components/Get_data";
 import { Button } from "@/components/ui/button";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { PulseLoader, SyncLoader } from "react-spinners";
 import {Dialog,DialogContent,DialogDescription,DialogFooter,
   DialogHeader,DialogTitle, DialogTrigger,} from "@/components/ui/dialog"
+import { Themecontext } from "@/app/components/Slider";
 
 export default function Favourites(){
   const [res, setres] = useState([])
   const [loading, setloading] = useState(false)
   const [refresh, setrefresh] = useState(false)
-
+  const theme = useContext(Themecontext)
   const [del, setdel] = useState(false)
   const [adding, setadding] = useState(false)
   
@@ -56,7 +57,7 @@ export default function Favourites(){
 
   return (
 <>
-    <div className="my-5 mx-6 relative bg-gray-00 h-full ">
+    <div className={`${theme.dark_theme?"":"text-black"} my-5 mx-6 relative bg-gray-00 h-full `}>
 
       <h1 className="text-4xl font-bold">{album}</h1>
       
@@ -78,7 +79,7 @@ Delete Folder
 </Button>
 
 </DialogTrigger>
-<DialogContent className="sm:max-w-[425px]">
+<DialogContent className={`${theme.dark_theme?"dark text-white":""} sm:max-w-[425px]`}>
   <DialogHeader>
     <DialogTitle>Delete Folder!</DialogTitle>
     <DialogDescription>
