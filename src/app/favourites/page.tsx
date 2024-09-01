@@ -1,13 +1,14 @@
 "use client"
 import CloudinaryImage from "../components/cloudinary-image";
 import { get_favourites } from "../components/Get_data";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { PulseLoader } from "react-spinners";
+import { Themecontext } from "../components/Slider";
 
 export default function Favourites(){
   const [res, setres] = useState([])
   const [loading, setloading] = useState(false)
-
+  const theme = useContext(Themecontext)
   async function handleRefresh(public_id:string,albumName:string,img_delete:boolean=false){
     if(!img_delete){
     const new_res:any=res.map((val:any)=>{
@@ -44,6 +45,7 @@ export default function Favourites(){
               setloading(false)
             }
           }
+          // setloading(true)
           setdata()
         }, [])
 
@@ -56,7 +58,7 @@ export default function Favourites(){
 
 <>
     
-    <div className="my-5 mx-6 relative bg-gray-00 h-full ">
+    <div className={`${theme.dark_theme?"text-white":"text-black"} my-5 mx-6 relative bg-gray-00 h-full `}>
 
       <h1 className="text-4xl font-bold">Favourites</h1>
       
@@ -86,7 +88,7 @@ export default function Favourites(){
         {
           loading && 
           <PulseLoader
-  color="#ffffff"
+  color={`${theme.dark_theme?"#fff":"#000"}`}
   margin={5}
   size={20}
   speedMultiplier={1.5}

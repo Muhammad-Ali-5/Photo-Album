@@ -1,5 +1,5 @@
 "use client"
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import 'react-toastify/dist/ReactToastify.css';
 import { Button } from "@/components/ui/button"
 import {DropdownMenu,DropdownMenuContent,DropdownMenuGroup,DropdownMenuItem
@@ -11,12 +11,14 @@ import { Label } from "@/components/ui/label"
 import { add_album, delete_img } from './Get_data'
 import { SyncLoader } from 'react-spinners'
 import Link from 'next/link';
+import { Themecontext } from './Slider';
 
 export default function Dropdown(props:any) {
   const [open, setopen] = useState(false)
   const [del, setdel] = useState(false)
   const [albumName, setalbumName] = useState("")
   const [adding, setadding] = useState(false)
+  const theme = useContext(Themecontext)
 
   async function add_to_album(){
     let return_value;
@@ -46,7 +48,7 @@ export default function Dropdown(props:any) {
   }
 
   return (
-    <div>
+    <div className=''>
         <DropdownMenu>
 <DropdownMenuTrigger className='h-4 sm:h-7 w-4' asChild>
   
@@ -61,7 +63,7 @@ export default function Dropdown(props:any) {
 </Button>
 </DropdownMenuTrigger>
 
-<DropdownMenuContent className="">
+<DropdownMenuContent className={`${theme.dark_theme?"dark":""}`}>
   
   <DropdownMenuGroup className='flex flex-col gap-1 items-center '>
 
@@ -78,7 +80,7 @@ export default function Dropdown(props:any) {
 </Button>
 
 </DialogTrigger>
-<DialogContent className="sm:max-w-[425px]">
+<DialogContent className={`${theme.dark_theme?"dark text-white":""} sm:max-w-[425px]`}>
   <DialogHeader>
     <DialogTitle>Add to Album</DialogTitle>
     <DialogDescription>
@@ -139,7 +141,7 @@ Add to Album
 </Button>
 
 </DialogTrigger>
-<DialogContent className="sm:max-w-[425px]">
+<DialogContent className={`${theme.dark_theme?"dark text-white":""} sm:max-w-[425px]`}>
   <DialogHeader>
     <DialogTitle>Delete Image</DialogTitle>
     <DialogDescription>

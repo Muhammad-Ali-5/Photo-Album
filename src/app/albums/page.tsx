@@ -1,5 +1,5 @@
 "use client"
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { PulseLoader } from "react-spinners";
 import {
@@ -13,11 +13,13 @@ import {
 
 import { get_folders } from '../components/Get_data'
 import Link from 'next/link'
+import { Themecontext } from '../components/Slider';
 
 
 export default function Page() {
   const [folders, setfolders] = useState([])
   const [loading, setloading] = useState(false)
+  const theme = useContext(Themecontext)
 
   useEffect(() => {
     async function get_fold_name(){
@@ -30,13 +32,14 @@ export default function Page() {
       setloading(false)  
     }
     }
+    // setloading(true)
     get_fold_name()
   }, [])
   
   return (
-    <div className="my-5 mx-6 relative h-full">
+    <div className={`my-5 ${theme.dark_theme?"text-white":"text-black"}  mx-6 relative h-full`}>
 
-      <div className='text-4xl font-bold'>
+      <div className={`${theme.dark_theme?"":"text-black"} text-4xl font-bold`}>
 
       Albums Page
       </div>
@@ -45,7 +48,7 @@ export default function Page() {
       
 {!loading && folders.length!==0 && folders.map((val:any)=>{
   return (
-    <Card key={val.external_id} className="bg-cyan-00 border-gray-600 hover:border-gray-200">
+    <Card key={val.external_id} className={`${theme.dark_theme?"":"text-black"} bg-cyan-00  border-gray-600 hover:border-gray-200`}>
       <CardHeader>
         <CardTitle className='text-base sm:text-2xl'>{val.name}</CardTitle>
         <CardDescription className='text-xs sm:text-base '>All your {val.name} images.</CardDescription>
@@ -54,7 +57,7 @@ export default function Page() {
       </CardContent>
       <CardFooter className="flex justify-between">
         <Link className='w-full' href={`albums/${val.name}`}>
-        <Button className='w-full sm:text-base sm:w-full text-xs'>
+        <Button className={`${theme.dark_theme?"bg-gray-900 hover:bg-gray-700 text-white":"border-2 hover:bg-gray-200"} border-black w-full sm:text-base sm:w-full text-xs`}>
           View Album
           </Button>
         </Link>
@@ -75,7 +78,7 @@ export default function Page() {
         {
           loading && 
           <PulseLoader
-  color="#ffffff"
+  color={`${theme.dark_theme?"#fff":"#000"}`}
   margin={5}
   size={20}
   speedMultiplier={1.5}

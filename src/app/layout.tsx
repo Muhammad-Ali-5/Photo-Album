@@ -19,7 +19,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="relative h-full">
-      <body className={"inter.className dark h-full"}>
+      <body className={"inter.className h-full"}>
                 
       <Slider>
         {children}

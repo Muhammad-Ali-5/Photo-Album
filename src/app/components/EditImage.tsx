@@ -2,7 +2,8 @@
 import { Button } from '@/components/ui/button'
 import { CldImage } from 'next-cloudinary'
 import { useSearchParams } from 'next/navigation'
-import React, { Suspense, useEffect, useState } from 'react'
+import React, { Suspense, useContext, useEffect, useState } from 'react'
+import { Themecontext } from './Slider'
 export default function EditImage() {
     const [edit, setedit] = useState("")
     const [id, setid] = useState("")
@@ -11,9 +12,10 @@ export default function EditImage() {
     const new_id:any=searchparam.get("public_id")
     setid(new_id)
   }, [searchparam])
+  const theme = useContext(Themecontext)
   
   return (
-      <div className="my-5 mx-6 relative h-full">
+      <div className={`${theme.dark_theme?"":"text-black"} my-5 mx-6 relative h-full`}>
 
         <h1 className="text-4xl font-bold">Edit Image</h1>
   
@@ -21,11 +23,11 @@ export default function EditImage() {
         <div className='bg-gray-00 mt-5 flex flex-wrap gap-3'>
         <Button onClick={()=>{setedit("")}} className='border-white border-2' type='button' variant="ghost">Clear All </Button>
         <Button onClick={()=>{setedit("")}} className='border-white border-2' type='button' variant="ghost">Save</Button>
-        <Button onClick={()=>{setedit("fill")}} className='' type='button' variant="default">Apply Generative Fill </Button>
-        <Button onClick={()=>{setedit("blur")}} className='' type='button' variant="default">Blur </Button>
-        <Button onClick={()=>{setedit("grayscale")}} className='' type='button' variant="default">GrayScale</Button>
-        <Button onClick={()=>{setedit("opacity")}} className='' type='button' variant="default">Opacity</Button>
-        <Button onClick={()=>{setedit("pixelate")}} className='' type='button' variant="default">Pixelate</Button>
+        <Button onClick={()=>{setedit("fill")}} className={`${theme.dark_theme?"":"bg-gray-400 hover:bg-gray-300 "}`} type='button' variant="default">Apply Generative Fill </Button>
+        <Button onClick={()=>{setedit("blur")}} className={`${theme.dark_theme?"":"bg-gray-400 hover:bg-gray-300 "}`} type='button' variant="default">Blur </Button>
+        <Button onClick={()=>{setedit("grayscale")}} className={`${theme.dark_theme?"":"bg-gray-400 hover:bg-gray-300 "}`} type='button' variant="default">GrayScale</Button>
+        <Button onClick={()=>{setedit("opacity")}} className={`${theme.dark_theme?"":"bg-gray-400 hover:bg-gray-300 "}`} type='button' variant="default">Opacity</Button>
+        <Button onClick={()=>{setedit("pixelate")}} className={`${theme.dark_theme?"":"bg-gray-400 hover:bg-gray-300 "}`} type='button' variant="default">Pixelate</Button>
         
         
         </div>

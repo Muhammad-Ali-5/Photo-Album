@@ -3,9 +3,10 @@ import { Button } from "@/components/ui/button";
 import CloudinaryImage from "./components/cloudinary-image";
 import Upload_btn from "./components/upload_btn";
 import { Input } from "@/components/ui/input";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { get_images } from "./components/Get_data";
 import { PulseLoader } from "react-spinners";
+import { Themecontext } from "./components/Slider";
 
 export default function Home() {
   const [res, setres] = useState([])
@@ -14,6 +15,8 @@ export default function Home() {
   const [useres, setuseres] = useState(false)
   const [search, setsearch] = useState("")
   const [upload, setupload] = useState(false)
+  const theme = useContext(Themecontext)
+  // console.log(`Theme : ${(theme.dark_theme)}`)
 
   async function handleRefresh(public_id:string,albumName:string,img_delete:boolean=false){
     if(!img_delete){
@@ -86,11 +89,12 @@ export default function Home() {
     }
 
   return (
-    <div className={`my-5 mx-6 bg-red-00 relative h-full`}>
-
+    <div className={`${theme.dark_theme?"text-white":"text-black"} my-5 mx-6 bg-red-00 relative h-full`}>
+      {/* {theme.dark_theme && <div>Dark</div>}
+      {!theme.dark_theme && <div>Light</div>} */}
       <div className="flex justify-between">
 
-      <h1 className="text-4xl font-bold">Gallery</h1>
+      <h1 className={`${theme.dark_theme?"":"text-black"} text-4xl font-bold`}>Gallery</h1>
       
       <span className="mt-3">
 
@@ -103,16 +107,16 @@ export default function Home() {
       <p>Search by Tag</p>
       <div className="flex gap-5 ">
 
-      <Input value={search} className="border-gray-500 hover:border-gray-300"  onChange={(e)=>{
+      <Input value={search} className={`${theme.dark_theme?"":"bg-gray-100 text-black hover:border-black"} border-gray-500 hover:border-gray-300`}  onChange={(e)=>{
         
         // console.log(`Search  : ${e.target.value}`)
         setsearch(e.target.value)}} type="text" placeholder="Search" />
-      <Button variant="outline" className="border-gray-300" onClick={()=>{
+      <Button variant="outline" className={`${theme.dark_theme?"text-white":"text-white"} border-gray-300`} onClick={()=>{
         setuseres(false)
         setsearch("")
         fetch_data()
       }}>Clear</Button>
-      <Button onClick={handleSearch}>Search</Button>
+      <Button className={`border-gray-500 border-2`} onClick={handleSearch}>Search</Button>
       </div>
 
       </div>
@@ -156,7 +160,7 @@ export default function Home() {
       
       {loading && <div className="absolute translate-x-[-50%] translate-y-[-50%] top-[50%] left-[50%]">
           <PulseLoader
-  color="#ffffff"
+  color={`${theme.dark_theme?"#fff":"#000"}`}
   margin={5}
   size={20}
   speedMultiplier={1.5}
