@@ -79,8 +79,8 @@ export default function Slider({ children }: any) {
             />
           </div>
 
-          <div className="ml-0 sm:ml-14 w-full flex-grow h-full">
-            <div className="overflow-y-scroll ">{children}</div>
+          <div className="ml-0 overflow-y-scroll sm:ml-14 w-full flex-grow h-full">
+            <div className="">{children}</div>
           </div>
         </div>
       </div>
