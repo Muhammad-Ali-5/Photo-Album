@@ -1,208 +1,171 @@
 "use client";
-import { Button } from "@/components/ui/button";
+
+import { useEffect, useState } from "react";
+import Navbar from "./components/Navbar";
+import Side_Nav from "./components/Side_Nav";
 import CloudinaryImage from "./components/cloudinary-image";
-import Upload_btn from "./components/upload_btn";
-import { Input } from "@/components/ui/input";
-import { useContext, useEffect, useState } from "react";
-import { get_images } from "./components/Get_data";
+import ImageDetailModal from "./components/ImageDetailModal";
+import { get_images, samplePhotos } from "./components/Get_data";
 import { PulseLoader } from "react-spinners";
-import { Themecontext } from "./components/Slider";
+import { Sparkles, Layers, SlidersHorizontal, Image as ImageIcon } from "lucide-react";
+import { Button } from "@/components/button";
 
 export default function Home() {
-  const [res, setres] = useState([]);
-  const [searchres, setsearchres] = useState([]);
-  const [loading, setloading] = useState(false);
-  const [useres, setuseres] = useState(false);
-  const [search, setsearch] = useState("");
-  const theme = useContext(Themecontext);
+  const [photos, setPhotos] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedTag, setSelectedTag] = useState("All");
+  const [selectedPhoto, setSelectedPhoto] = useState<any | null>(null);
+  const [favorites, setFavorites] = useState<string[]>(["sample_architecture_1"]);
 
-  async function handleRefresh(
-    public_id: string,
-    albumName: string,
-    img_delete: boolean = false
-  ) {
-    if (!img_delete) {
-      const new_res: any = res.map((val: any) => {
-        if (val.public_id === public_id) {
-          let new_public_id = public_id.split("/");
-          let orig_id = new_public_id.pop();
-          return { ...val, public_id: `${albumName}/${orig_id}` };
-        }
-        return val;
-      });
-      setres(new_res);
-    } else {
-      const new_res: any = res.filter(
-        (val: any) => val.public_id !== public_id
-      );
-      setres(new_res);
-    }
-  }
-  async function fetch_data() {
+  const tagCategories = ["All", "Nature", "Architecture", "Cyberpunk", "Minimalist"];
+
+  const fetchGalleryData = async () => {
     try {
-      const response = await get_images();
-      setres(response);
+      setLoading(true);
+      const data = await get_images();
+      setPhotos(data || samplePhotos);
+    } catch {
+      setPhotos(samplePhotos);
     } finally {
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    async function get_res() {
-      try {
-        setloading(true);
-        const response = await get_images();
-        setres(response);
-      } finally {
-        setloading(false);
-      }
-    }
-    get_res();
+    fetchGalleryData();
   }, []);
 
-  const MAX_COLUMN = 4;
-  function get_column(colIndex: number) {
-    if (useres) {
-      return searchres.filter((val, idx) => idx % MAX_COLUMN === colIndex);
-    } else {
-      return res.filter((val, idx) => idx % MAX_COLUMN === colIndex);
-    }
-  }
+  const handleToggleFavorite = (publicId: string) => {
+    setFavorites((prev) =>
+      prev.includes(publicId)
+        ? prev.filter((id) => id !== publicId)
+        : [...prev, publicId]
+    );
+  };
 
-  function handleSearch() {
-    if (search === "") {
-      setuseres(false);
-      return;
-    }
-    const new_res = res.filter((val: any) => val.tags.includes(search));
-    setsearchres(new_res);
-    setuseres(true);
-  }
+  // Filtered photos calculation
+  const filteredPhotos = photos.filter((photo) => {
+    const matchesSearch =
+      searchQuery === "" ||
+      photo.public_id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      photo.tags?.some((t: string) => t.toLowerCase().includes(searchQuery.toLowerCase()));
+
+    const matchesTag =
+      selectedTag === "All" ||
+      photo.tags?.some((t: string) => t.toLowerCase() === selectedTag.toLowerCase());
+
+    return matchesSearch && matchesTag;
+  });
+
+  const MAX_COLUMNS = 4;
+  const getColumnPhotos = (colIndex: number) => {
+    return filteredPhotos.filter((_, idx) => idx % MAX_COLUMNS === colIndex);
+  };
 
   return (
-    <div
-      className={`${
-        theme.dark_theme ? "text-white" : "text-black"
-      } h-screen mt-5 mx-6 relative`}
-    >
-      <div className="flex justify-between">
-        <h1
-          className={`${
-            theme.dark_theme ? "" : "text-black"
-          } text-4xl font-bold`}
-        >
-          Gallery
-        </h1>
+    <div className="min-h-screen bg-[#080610] text-gray-100 flex flex-col">
+      <Navbar
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        onUploadSuccess={fetchGalleryData}
+      />
 
-        <span className="mt-3">
-          <Upload_btn fetch_data={fetch_data} />
-        </span>
-      </div>
+      <div className="flex-1 flex flex-col md:flex-row">
+        <Side_Nav />
 
-      <div className="mt-8 flex flex-col gap-3">
-        <p>Search by Tag</p>
-        <div className="flex gap-5 ">
-          <Input
-            value={search}
-            className={`${
-              theme.dark_theme
-                ? ""
-                : "bg-gray-100 text-black hover:border-black"
-            } border-gray-500 hover:border-gray-300`}
-            onChange={(e:any) => {
-              setsearch(e.target.value);
-            }}
-            type="text"
-            placeholder="Search"
-          />
-          <Button
-            variant="outline"
-            className={`${
-              theme.dark_theme ? "text-white" : "text-white"
-            } border-gray-300`}
-            onClick={() => {
-              setuseres(false);
-              setsearch("");
-              fetch_data();
-            }}
-          >
-            Clear
-          </Button>
-          <Button className={`border-gray-500 border-2`} onClick={handleSearch}>
-            Search
-          </Button>
-        </div>
-      </div>
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl">
+          {/* Header Banner */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-xs font-mono mb-1">
+                <Sparkles className="size-3 text-purple-400" /> Digital Asset Vault
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-white">
+                Cloud Photo Gallery
+              </h1>
+            </div>
 
-      <div className=" mt-5 grid md:grid-cols-4 grid-cols-2 gap-3  ">
-        {!useres &&
-          !loading &&
-          res.length !== 0 &&
-          [get_column(0), get_column(1), get_column(2), get_column(3)].map(
-            (val, idx) => {
-              return (
-                <div key={idx} className="flex flex-col gap-3">
-                  {val.map((data: any) => {
-                    return (
-                      <CloudinaryImage
-                        rmv_img={null}
-                        handleRefresh={handleRefresh}
-                        key={data.public_id}
-                        props={data}
-                        path={"/"}
-                      />
-                    );
-                  })}
-                </div>
-              );
-            }
-          )}
-
-        {useres &&
-          !loading &&
-          searchres.length !== 0 &&
-          [get_column(0), get_column(1), get_column(2), get_column(3)].map(
-            (val, idx) => {
-              return (
-                <div key={idx} className="flex flex-col gap-3">
-                  {val.map((data: any) => {
-                    return (
-                      <CloudinaryImage
-                        rmv_img={null}
-                        handleRefresh={handleRefresh}
-                        key={data.public_id}
-                        props={data}
-                        path={"/"}
-                      />
-                    );
-                  })}
-                </div>
-              );
-            }
-          )}
-
-        {useres && !loading && searchres.length === 0 && (
-          <div className="bg-transparent translate-x-[-50%] translate-y-[-50%] absolute top-[50vh] left-[50%]  t text-4xl font-bold ">
-            No Image Found!
+            <div className="flex items-center gap-2 text-xs font-mono text-gray-400">
+              <Layers className="size-4 text-purple-400" />
+              <span>{filteredPhotos.length} Assets Loaded</span>
+            </div>
           </div>
-        )}
 
-        {!useres && !loading && res.length === 0 && (
-          <div className="bg-transparent translate-x-[-50%] translate-y-[-50%] absolute top-[50vh] left-[50%] w-full text-center sm:text-4xl text-3xl font-bold ">
-            Gallery is Empty!
+          {/* Category Tag Pills */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+            <SlidersHorizontal className="size-4 text-purple-400 mr-1 shrink-0" />
+            {tagCategories.map((tag) => (
+              <button
+                key={tag}
+                onClick={() => setSelectedTag(tag)}
+                className={`px-4 py-1.5 rounded-full text-xs font-semibold tracking-wider transition-all cursor-pointer shrink-0 ${
+                  selectedTag === tag
+                    ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md border border-purple-400/40"
+                    : "bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10"
+                }`}
+              >
+                {tag}
+              </button>
+            ))}
           </div>
-        )}
+
+          {/* Gallery Masonry Grid */}
+          {loading ? (
+            <div className="py-20 flex flex-col items-center justify-center space-y-3">
+              <PulseLoader color="#8b5cf6" size={12} margin={4} />
+              <p className="text-xs font-mono text-gray-400">Streaming media assets from Cloud CDN...</p>
+            </div>
+          ) : filteredPhotos.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-start">
+              {[0, 1, 2, 3].map((colIdx) => (
+                <div key={colIdx} className="flex flex-col gap-4">
+                  {getColumnPhotos(colIdx).map((photo) => (
+                    <CloudinaryImage
+                      key={photo.public_id}
+                      props={photo}
+                      onSelectPhoto={setSelectedPhoto}
+                      onToggleFavorite={handleToggleFavorite}
+                      isFavorited={favorites.includes(photo.public_id)}
+                    />
+                  ))}
+                </div>
+              ))}
+            </div>
+          ) : (
+            /* Empty State */
+            <div className="py-16 text-center space-y-3 glass-panel rounded-3xl border-dashed border-white/15 p-8 max-w-md mx-auto">
+              <div className="size-12 mx-auto rounded-full bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400">
+                <ImageIcon className="size-6" />
+              </div>
+              <h3 className="text-base font-bold text-white">No Matching Assets Found</h3>
+              <p className="text-xs text-gray-400">
+                Try searching for another tag like <span className="text-purple-300 font-mono">architecture</span> or clear filters.
+              </p>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  setSelectedTag("All");
+                  setSearchQuery("");
+                }}
+                className="mt-2 rounded-full text-xs"
+              >
+                Clear Search Filters
+              </Button>
+            </div>
+          )}
+        </main>
       </div>
 
-      {loading && (
-        <div className="absolute translate-x-[-50%] translate-y-[-50%] top-[50%] left-[50%]">
-          <PulseLoader
-            color={`${theme.dark_theme ? "#fff" : "#000"}`}
-            margin={5}
-            size={20}
-            speedMultiplier={1.5}
-          />
-        </div>
-      )}
+      {/* Image Detail & Metadata Modal */}
+      <ImageDetailModal
+        photo={selectedPhoto}
+        isOpen={!!selectedPhoto}
+        onClose={() => setSelectedPhoto(null)}
+        onToggleFavorite={handleToggleFavorite}
+        isFavorited={selectedPhoto ? favorites.includes(selectedPhoto.public_id) : false}
+      />
     </div>
   );
 }

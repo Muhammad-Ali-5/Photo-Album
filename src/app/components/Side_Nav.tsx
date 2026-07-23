@@ -1,153 +1,60 @@
 "use client";
-import { Button } from "@/components/ui/button";
+
 import Link from "next/link";
-import React from "react";
+import { usePathname } from "next/navigation";
+import { Image as ImageIcon, FolderHeart, Heart, HardDrive, ShieldCheck } from "lucide-react";
 
-export default function Side_Nav({
-  dialog,
-  setdialog,
-  hov,
-  sethov,
-  mob,
-  setmob,
-  dark_theme,
-  setdark,
-}: any) {
+export default function Side_Nav() {
+  const pathname = usePathname();
+
+  const links = [
+    { name: "All Gallery Assets", href: "/", icon: ImageIcon },
+    { name: "Album Folders", href: "/albums", icon: FolderHeart },
+    { name: "Favorite Collection", href: "/favourites", icon: Heart },
+  ];
+
   return (
-    <div
-      onMouseEnter={() => {
-        sethov(true);
-      }}
-      onMouseLeave={() => {
-        sethov(false);
-      }}
-      className={`${
-        dialog && mob ? "" : "delay-75 translate-x-[-100%] sm:translate-x-0"
-      } ${dark_theme ? "bg-gray-900" : "bg-gray-100 text-black "} ${
-        hov ? "w-36" : mob ? "w-36" : "w-14"
-      } transition-all space-y-4 sm:flex flex-col items-center h-full px-3 w py-4`}
-    >
-      <h2 className="mb-2 hidden px-4 text-lg font-semibold tracking-tight">
-        Manage
-      </h2>
-
-      <div className="w-full h-full relative">
-        <div className="absolute top-0 w-28">
-          <Button
-            onClick={() => {
-              setdialog(false);
-            }}
-            variant="ghost"
-            className="w-full hover:delay-200   p-1"
-          >
-            <Link
-              onClick={() => {
-                setdialog(false);
-              }}
-              className="flex w-full justify-start items-center gap-2"
-              href="/"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="size-6"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"
-                />
-              </svg>
-
-              <p
-                className={`transition-all ${
-                  hov || mob ? "delay-100 " : " opacity-0"
-                }`}
-              >
-                Gallery
-              </p>
-            </Link>
-          </Button>
+    <aside className="w-full md:w-64 shrink-0 glass-panel bg-[#0b0818]/90 border-r border-white/10 p-4 space-y-6 md:min-h-[calc(100vh-65px)]">
+      {/* Navigation Group */}
+      <div className="space-y-1">
+        <div className="px-3 text-[10px] font-mono uppercase text-gray-400 tracking-wider">
+          Library Management
         </div>
-        <div className="absolute top-12 w-28">
-          <Button
-            onClick={() => {
-              setdialog(false);
-            }}
-            variant="ghost"
-            className="w-full hover:delay-200 p-1"
-          >
-            <Link
-              href="/albums"
-              className="justify-start flex gap-2 items-center w-full"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="size-6"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z"
-                />
-              </svg>
-
-              <p
-                className={`transition-all ${
-                  hov || mob ? "delay-100" : "opacity-0"
+        <nav className="space-y-1 pt-2">
+          {links.map((link) => {
+            const Icon = link.icon;
+            const isActive = pathname === link.href;
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-semibold transition-all ${
+                  isActive
+                    ? "bg-purple-600/30 text-white border border-purple-500/40 shadow-sm"
+                    : "text-gray-400 hover:text-white hover:bg-white/5"
                 }`}
               >
-                Albums
-              </p>
-            </Link>
-          </Button>
+                <Icon className={`size-4 ${isActive ? "text-purple-400" : "text-gray-400"}`} />
+                <span>{link.name}</span>
+              </Link>
+            );
+          })}
+        </nav>
+      </div>
+
+      {/* Cloud Engine Info Card */}
+      <div className="hidden md:block p-4 rounded-2xl glass-card bg-white/[0.02] border-white/10 space-y-2">
+        <div className="flex items-center gap-2 text-xs font-bold text-white">
+          <HardDrive className="size-4 text-purple-400" />
+          <span>Cloud CDN Active</span>
         </div>
-
-        <div className={`absolute top-24 w-28`}>
-          <Button
-            onClick={() => {
-              setdialog(false);
-            }}
-            variant="ghost"
-            className={` w-full hover:delay-200 p-1`}
-          >
-            <Link
-              href="/favourites"
-              className=" justify-start items-center w-full flex gap-2"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="size-6"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"
-                />
-              </svg>
-
-              <p
-                className={`transition-all z-10 ${
-                  hov || mob ? "delay-100" : "opacity-0 "
-                }`}
-              >
-                Favourites
-              </p>
-            </Link>
-          </Button>
+        <p className="text-[11px] text-gray-400 leading-relaxed">
+          Optimized image delivery via Cloudinary with dynamic format conversion and auto-transformations.
+        </p>
+        <div className="pt-1 flex items-center gap-1.5 text-[10px] font-mono text-emerald-400">
+          <ShieldCheck className="size-3" /> SOC2 Verified Infrastructure
         </div>
       </div>
-    </div>
+    </aside>
   );
 }
