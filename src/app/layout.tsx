@@ -1,11 +1,14 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider } from "./components/ThemeContext";
+import { FavoritesProvider } from "./components/FavoritesContext";
+import { MediaProvider } from "./components/MediaContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const viewport: Viewport = {
-  themeColor: "#080610",
+  themeColor: "#09090b",
   width: "device-width",
   initialScale: 1,
 };
@@ -31,8 +34,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark scroll-smooth">
-      <body className={`${inter.className} bg-[#080610] text-gray-100 antialiased selection:bg-purple-500/30 selection:text-purple-200`}>
-        {children}
+      <body className={`${inter.className} bg-[#09090b] text-zinc-100 antialiased selection:bg-zinc-800 selection:text-white`}>
+        <ThemeProvider>
+          <FavoritesProvider>
+            <MediaProvider>{children}</MediaProvider>
+          </FavoritesProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

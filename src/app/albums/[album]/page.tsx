@@ -1,71 +1,58 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Navbar from "../../components/Navbar";
 import Side_Nav from "../../components/Side_Nav";
 import CloudinaryImage from "../../components/cloudinary-image";
 import ImageDetailModal from "../../components/ImageDetailModal";
-import { get_images, samplePhotos } from "../../components/Get_data";
-import { FolderHeart, ArrowLeft } from "lucide-react";
+import { FolderHeart, ArrowLeft, Image as ImageIcon } from "lucide-react";
 import Link from "next/link";
+import { useTheme } from "../../components/ThemeContext";
+import { useMedia } from "../../components/MediaContext";
 
 export default function AlbumViewPage({ params }: { params: { album: string } }) {
-  const [photos, setPhotos] = useState<any[]>([]);
-  const [selectedPhoto, setSelectedPhoto] = useState<any | null>(null);
-  const [favorites, setFavorites] = useState<string[]>([]);
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  const { photos } = useMedia();
 
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const data = await get_images();
-        setPhotos(data || samplePhotos);
-      } catch {
-        setPhotos(samplePhotos);
-      }
-    }
-    loadData();
-  }, []);
+  const [selectedPhoto, setSelectedPhoto] = useState<any | null>(null);
 
   const albumTag = params.album;
   const albumPhotos = photos.filter((p) =>
     p.tags?.some((t: string) => t.toLowerCase() === albumTag.toLowerCase())
   );
 
-  const handleToggleFavorite = (publicId: string) => {
-    setFavorites((prev) =>
-      prev.includes(publicId)
-        ? prev.filter((id) => id !== publicId)
-        : [...prev, publicId]
-    );
-  };
-
   return (
-    <div className="min-h-screen bg-[#080610] text-gray-100 flex flex-col">
+    <div className={`min-h-screen flex flex-col ${isDark ? "bg-[#09090b] text-zinc-100" : "bg-white text-zinc-900"}`}>
       <Navbar />
 
       <div className="flex-1 flex flex-col md:flex-row">
         <Side_Nav />
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl">
-          <div className="flex items-center justify-between pb-4 border-b border-white/10">
+          <div className="flex items-center justify-between pb-4 border-b border-zinc-800">
             <div className="flex items-center gap-3">
               <Link
                 href="/albums"
-                className="p-2 rounded-full bg-white/5 border border-white/10 text-gray-300 hover:text-white transition-colors"
+                className={`p-2 rounded-full border transition-colors ${
+                  isDark
+                    ? "bg-zinc-900 border-zinc-800 text-zinc-300 hover:text-white"
+                    : "bg-zinc-100 border-zinc-300 text-zinc-700 hover:text-black"
+                }`}
               >
                 <ArrowLeft className="size-4" />
               </Link>
               <div>
-                <span className="text-[10px] font-mono text-purple-400 uppercase tracking-wider block">
+                <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider block">
                   Collection Folder
                 </span>
-                <h1 className="text-xl sm:text-2xl font-extrabold text-white capitalize flex items-center gap-2">
-                  <FolderHeart className="size-5 text-purple-400" /> {albumTag} Collection
+                <h1 className="text-xl sm:text-2xl font-extrabold capitalize flex items-center gap-2">
+                  <FolderHeart className="size-5 text-zinc-400" /> {albumTag} Collection
                 </h1>
               </div>
             </div>
 
-            <span className="text-xs font-mono text-gray-400">
+            <span className="text-xs font-mono text-zinc-400">
               {albumPhotos.length} Items Included
             </span>
           </div>
@@ -77,14 +64,18 @@ export default function AlbumViewPage({ params }: { params: { album: string } })
                   key={photo.public_id}
                   props={photo}
                   onSelectPhoto={setSelectedPhoto}
-                  onToggleFavorite={handleToggleFavorite}
-                  isFavorited={favorites.includes(photo.public_id)}
                 />
               ))}
             </div>
           ) : (
             <div className="py-16 text-center space-y-3 glass-panel rounded-3xl p-8 max-w-md mx-auto">
-              <p className="text-xs text-gray-400">No photos found in this album tag.</p>
+              <div className="size-12 mx-auto rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400">
+                <ImageIcon className="size-6" />
+              </div>
+              <h3 className="text-base font-bold">Album Folder is Empty</h3>
+              <p className="text-xs text-zinc-400">
+                Open any photo from the gallery and use &quot;Move to Album Folder&quot; to assign images to <span className="font-mono text-white">#{albumTag}</span>.
+              </p>
             </div>
           )}
         </main>
@@ -94,8 +85,6 @@ export default function AlbumViewPage({ params }: { params: { album: string } })
         photo={selectedPhoto}
         isOpen={!!selectedPhoto}
         onClose={() => setSelectedPhoto(null)}
-        onToggleFavorite={handleToggleFavorite}
-        isFavorited={selectedPhoto ? favorites.includes(selectedPhoto.public_id) : false}
       />
     </div>
   );

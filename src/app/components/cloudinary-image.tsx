@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Heart, Maximize2, Tag } from "lucide-react";
+import { Heart, Maximize2 } from "lucide-react";
+import { useFavorites } from "./FavoritesContext";
 
 interface CloudinaryImageProps {
   props: any;
@@ -9,17 +10,15 @@ interface CloudinaryImageProps {
   rmv_img?: any;
   path?: string;
   onSelectPhoto?: (photo: any) => void;
-  onToggleFavorite?: (id: string) => void;
-  isFavorited?: boolean;
 }
 
 export default function CloudinaryImage({
   props,
   onSelectPhoto,
-  onToggleFavorite,
-  isFavorited = false,
 }: CloudinaryImageProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const { isFavorited, toggleFavorite } = useFavorites();
+  const favorited = isFavorited(props.public_id);
 
   const imageUrl = props.secure_url || `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/${props.public_id}`;
 
@@ -28,7 +27,7 @@ export default function CloudinaryImage({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={() => onSelectPhoto?.(props)}
-      className="group relative rounded-2xl overflow-hidden glass-card bg-[#0e0b1c] border-white/10 shadow-lg cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:border-purple-500/50"
+      className="group relative rounded-2xl overflow-hidden glass-card bg-zinc-900/60 border-zinc-800 shadow-md cursor-pointer transition-all duration-200 hover:border-zinc-500"
     >
       {/* Photo Element */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -41,7 +40,7 @@ export default function CloudinaryImage({
 
       {/* Hover Overlay Container */}
       <div
-        className={`absolute inset-0 bg-gradient-to-t from-[#080610]/90 via-[#080610]/30 to-transparent p-4 flex flex-col justify-between transition-opacity duration-300 ${
+        className={`absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent p-4 flex flex-col justify-between transition-opacity duration-200 ${
           isHovered ? "opacity-100" : "opacity-0"
         }`}
       >
@@ -50,18 +49,19 @@ export default function CloudinaryImage({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onToggleFavorite?.(props.public_id);
+              toggleFavorite(props.public_id);
             }}
-            className={`p-2 rounded-full backdrop-blur-md transition-transform active:scale-95 cursor-pointer ${
-              isFavorited
-                ? "bg-purple-600/90 text-white shadow-md"
-                : "bg-black/40 text-gray-300 hover:text-white hover:bg-black/60"
+            className={`p-2 rounded-full backdrop-blur-md transition-all active:scale-90 cursor-pointer ${
+              favorited
+                ? "bg-red-600 text-white shadow-md"
+                : "bg-black/60 text-zinc-300 hover:text-white hover:bg-black/80 border border-zinc-700"
             }`}
+            title={favorited ? "Unlike Photo" : "Like Photo"}
           >
-            <Heart className={`size-3.5 ${isFavorited ? "fill-white" : ""}`} />
+            <Heart className={`size-3.5 ${favorited ? "fill-white text-white" : ""}`} />
           </button>
 
-          <span className="p-2 rounded-full bg-black/40 text-gray-300 hover:text-white backdrop-blur-md">
+          <span className="p-2 rounded-full bg-black/60 text-zinc-300 hover:text-white backdrop-blur-md border border-zinc-700">
             <Maximize2 className="size-3.5" />
           </span>
         </div>
@@ -75,7 +75,7 @@ export default function CloudinaryImage({
             {(props.tags || ["hd"]).slice(0, 3).map((tag: string, i: number) => (
               <span
                 key={i}
-                className="px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 text-[10px] font-mono border border-purple-500/30"
+                className="px-2 py-0.5 rounded-full bg-white/10 text-zinc-300 text-[10px] font-mono border border-white/15"
               >
                 #{tag}
               </span>
