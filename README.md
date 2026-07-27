@@ -5,22 +5,24 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
 [![Cloudinary](https://img.shields.io/badge/Cloudinary-CDN-blueviolet?style=for-the-badge&logo=cloudinary)](https://cloudinary.com/)
 [![Lucide Icons](https://img.shields.io/badge/Lucide_Icons-0.428-pink?style=for-the-badge&logo=lucide)](https://lucide.dev/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-lumina--cloud--gallery.vercel.app-000000?style=for-the-badge&logo=vercel)](https://lumina-cloud-gallery.vercel.app)
 
-Lumina is an enterprise-grade **Digital Asset Management (DAM) & Cloud Gallery Platform** built with **Next.js 14 App Router**, **TypeScript**, **Tailwind CSS**, and **Cloudinary CDN**. It provides high-performance cloud photo streaming, real-time tag-based curation, album folder management, theme responsiveness, and direct EXIF metadata inspection.
+**Lumina** is a Digital Asset Management (DAM) & Cloud Gallery Platform built with **Next.js 14 (App Router)**, **TypeScript**, **Tailwind CSS**, and **Cloudinary CDN**. It provides cloud photo streaming, real-time tag-based curation, album folder management, light/dark theme modes, and EXIF metadata inspection.
+
+> 🌐 **Live Web Application**: <a href="https://lumina-cloud-gallery.vercel.app" target="_blank" rel="noopener noreferrer">https://lumina-cloud-gallery.vercel.app</a>
 
 ---
 
-## ✨ Core Features & Technical Highlights
+## ✨ Core Features & Architecture
 
-- ☁️ **100% Live Cloudinary API Persistence**: Zero reliance on `localStorage` or cookies for media state. All asset uploads, album assignments, favorite toggles, and deletions are driven live by Cloudinary Server Actions and APIs.
-- ⚡ **Synchronous Server Actions & Real-Time Feedback**: Every mutating operation awaits Cloudinary API completion, providing visual loading spinners and explicit success/error feedback toasts.
-- 🎨 **Adaptive Light & Dark Theme System**: Fully responsive design supporting dynamic light and dark theme modes with high-contrast typography, theme-aware glassmorphism, and stage preview backgrounds.
-- 🏷️ **Tag-Based Media Curation & Dynamic Albums**: Move assets seamlessly between albums. Tag reassignment automatically strips former album tags on Cloudinary while updating album folder card counts and covers live.
-- 💖 **Cloud-Synced Favorites Vault**: Toggle asset favorites in real-time. Favorite status is derived live from Cloudinary `"favorite"` asset tags and persists across browser refreshes and devices.
-- 📥 **Direct Full-Resolution Blob Downloads**: High-speed direct browser downloads via Blob fetching without redirecting to external tabs.
-- 🚀 **10MB Upload Payload Support**: Configured Next.js Server Action body limits up to 10MB to accommodate high-resolution RAW and 4K photographs.
-- 🔄 **Instant Router Cache Invalidation**: Automatic `revalidatePath` execution on server actions guarantees zero stale cached views across route navigation.
+- ☁️ **Cloudinary API Integration**: Asset uploads, album assignments, favorite toggles, and asset deletions driven via Cloudinary Server Actions and API endpoints.
+- ⚡ **Synchronous Server Actions**: Operations await API execution with visual status indicators and feedback toasts.
+- 🎨 **Adaptive Light & Dark Theme System**: Supports light and dark theme modes with high-contrast typography, glassmorphism UI elements, and stage preview backgrounds.
+- 🏷️ **Tag-Based Curation & Dynamic Albums**: Multi-album asset management with tag reassignment, folder cover previews, and asset count indexing.
+- 💖 **Cloud-Synced Favorites**: Asset favorite status managed via Cloudinary `"favorite"` tags.
+- 📥 **Direct Media Downloads**: High-speed browser Blob downloads for full-resolution assets.
+- 🚀 **10MB Upload Payload Support**: Server Action payload limit configured up to 10MB to accommodate high-resolution images.
+- 🔄 **Cache Invalidation**: Automatic `revalidatePath` calls maintain view consistency across route transitions.
 
 ---
 
@@ -29,10 +31,10 @@ Lumina is an enterprise-grade **Digital Asset Management (DAM) & Cloud Gallery P
 | Layer | Technology | Description |
 | :--- | :--- | :--- |
 | **Framework** | Next.js 14 (App Router) | React framework with Server Components & Server Actions |
-| **Language** | TypeScript 5.0 | Strict type safety and end-to-end typing |
+| **Language** | TypeScript 5.0 | Type safety and end-to-end typing |
 | **Cloud Storage & CDN** | Cloudinary (`cloudinary` v2) | Media transformation, CDN delivery, search, and folder indexing |
-| **Styling** | Tailwind CSS & Vanilla CSS | Design tokens, responsive utility classes, and glassmorphism |
-| **Icons** | Lucide React | Modern, lightweight UI icons |
+| **Styling** | Tailwind CSS | Design tokens, responsive utility classes, and glassmorphism |
+| **Icons** | Lucide React | Modern UI icons |
 
 ---
 
@@ -71,7 +73,7 @@ lumina-cloud-gallery/
 │   │   │   ├── upload_btn.tsx        # Cloudinary upload component
 │   │   │   ├── Get_data.tsx          # Cloudinary server actions
 │   │   │   └── sampleData.ts         # Fallback data definitions
-│   │   ├── globals.css               # Design system tokens & utility utilities
+│   │   ├── globals.css               # Design system tokens & utilities
 │   │   ├── layout.tsx                # Context providers & OpenGraph metadata
 │   │   └── page.tsx                  # Main gallery masonry grid & category filters
 │   ├── components/
@@ -102,16 +104,10 @@ Populate your Cloudinary credentials in `.env` as shown in [Environment Configur
 ```bash
 npm run dev
 ```
-Open [http://localhost:3000](http://localhost:3000) in your browser to launch Lumina.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ### 4. Build for Production
 ```bash
 npm run build
 npm run start
 ```
-
----
-
-## 📜 License
-
-This project is licensed under the [MIT License](LICENSE).
