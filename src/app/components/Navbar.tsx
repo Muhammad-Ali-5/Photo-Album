@@ -35,7 +35,8 @@ export default function Navbar({
             <div className={`size-full rounded-full flex items-center justify-center ${
               isDark ? "bg-black text-white" : "bg-white text-black"
             }`}>
-              <Aperture className="size-5" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/favicon-32x32.png" alt="Lumina Emblem" className="size-5 rounded-full object-contain" />
             </div>
           </div>
           <div>

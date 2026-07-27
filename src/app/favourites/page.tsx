@@ -1,35 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Navbar from "../components/Navbar";
 import Side_Nav from "../components/Side_Nav";
 import CloudinaryImage from "../components/cloudinary-image";
 import ImageDetailModal from "../components/ImageDetailModal";
-import { get_images } from "../components/Get_data";
-import { samplePhotos } from "../components/sampleData";
 import { Heart } from "lucide-react";
 import { useFavorites } from "../components/FavoritesContext";
 import { useTheme } from "../components/ThemeContext";
+import { useMedia } from "../components/MediaContext";
 
 export default function FavouritesPage() {
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const { favorites } = useFavorites();
+  const { photos } = useMedia();
 
-  const [photos, setPhotos] = useState<any[]>([]);
   const [selectedPhoto, setSelectedPhoto] = useState<any | null>(null);
-
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const data = await get_images();
-        setPhotos(data || samplePhotos);
-      } catch {
-        setPhotos(samplePhotos);
-      }
-    }
-    loadData();
-  }, []);
 
   const favoritePhotos = photos.filter((photo) => favorites.includes(photo.public_id));
 
@@ -88,3 +75,4 @@ export default function FavouritesPage() {
     </div>
   );
 }
+

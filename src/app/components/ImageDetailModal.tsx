@@ -14,11 +14,14 @@ import {
   FileText,
   FolderPlus,
   FolderCheck,
+  Trash2,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/button";
 import { useTheme } from "./ThemeContext";
 import { useFavorites } from "./FavoritesContext";
 import { useMedia } from "./MediaContext";
+import { get_albums } from "./Get_data";
 
 interface ImageDetailModalProps {
   photo: any | null;
@@ -36,9 +39,11 @@ export default function ImageDetailModal({
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const { isFavorited, toggleFavorite } = useFavorites();
-  const { assignAlbum } = useMedia();
+  const { assignAlbum, deletePhoto } = useMedia();
 
   const [copied, setCopied] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [selectedAlbum, setSelectedAlbum] = useState("architecture");
   const [assigned, setAssigned] = useState(false);
   const [albums, setAlbums] = useState<any[]>([
@@ -49,15 +54,17 @@ export default function ImageDetailModal({
   ]);
 
   useEffect(() => {
-    const saved = localStorage.getItem("lumina_albums");
-    if (saved) {
+    async function loadAlbums() {
       try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setAlbums(parsed);
-          setSelectedAlbum(parsed[0].tag);
+        const data = await get_albums();
+        if (Array.isArray(data) && data.length > 0) {
+          setAlbums(data);
+          setSelectedAlbum(data[0].tag);
         }
       } catch {}
+    }
+    if (isOpen) {
+      loadAlbums();
     }
   }, [isOpen]);
 
@@ -79,6 +86,37 @@ export default function ImageDetailModal({
     setTimeout(() => setAssigned(false), 2000);
   };
 
+  const handleDelete = async () => {
+    if (window.confirm("Are you sure you want to delete this image?")) {
+      setDeleting(true);
+      await deletePhoto(photo.public_id);
+      setDeleting(false);
+      onClose();
+    }
+  };
+
+  const handleDownload = async () => {
+    setDownloading(true);
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      const fileExt = photo.format || "jpg";
+      link.download = `${photo.public_id.replace(/[/\\?%*:|"<>]/g, "_")}.${fileExt}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error("Direct download failed, opening link:", error);
+      window.open(imageUrl, "_blank");
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
       <div className="fixed inset-0" onClick={onClose} />
@@ -89,18 +127,20 @@ export default function ImageDetailModal({
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 z-20 p-2 text-zinc-400 hover:text-white bg-black/60 hover:bg-black/90 rounded-full border border-zinc-700 transition-colors cursor-pointer"
+          className="absolute top-3 right-3 z-20 p-2 text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white bg-white/80 dark:bg-black/60 hover:bg-white dark:hover:bg-black/90 rounded-full border border-zinc-300 dark:border-zinc-700 transition-colors cursor-pointer shadow-sm"
         >
           <X className="size-5" />
         </button>
 
-        {/* Photo View Box */}
-        <div className="relative md:w-3/5 bg-black flex items-center justify-center p-4 min-h-[280px] md:min-h-[480px]">
+        {/* Photo View Box: Theme-responsive stage background */}
+        <div className={`relative md:w-3/5 flex items-center justify-center p-4 min-h-[280px] md:min-h-[480px] border-r transition-colors ${
+          isDark ? "bg-zinc-950 border-zinc-800" : "bg-zinc-100 border-zinc-200"
+        }`}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={imageUrl}
             alt={photo.public_id}
-            className="max-h-[75vh] w-auto object-contain rounded-2xl shadow-2xl"
+            className="max-h-[75vh] w-auto object-contain rounded-2xl shadow-xl"
           />
         </div>
 
@@ -139,6 +179,15 @@ export default function ImageDetailModal({
               {copied ? <Check className="size-3.5" /> : <Share2 className="size-3.5" />}
               <span>{copied ? "Copied!" : "Share"}</span>
             </Button>
+
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className="p-2 rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-600 border border-red-200 dark:border-red-900/50 transition-colors cursor-pointer"
+              title="Delete Image"
+            >
+              {deleting ? <Loader2 className="size-4 animate-spin" /> : <Trash2 className="size-4" />}
+            </button>
           </div>
 
           {/* Move to Album Folder Option */}
@@ -176,49 +225,49 @@ export default function ImageDetailModal({
             </div>
           </div>
 
-          {/* Technical Specs List */}
+          {/* Technical Specs List — High Contrast Colors */}
           <div className="space-y-2.5 pt-1 text-xs">
-            <div className="flex items-center justify-between text-zinc-400">
-              <span className="flex items-center gap-2">
-                <Maximize2 className="size-3.5" /> Resolution
+            <div className="flex items-center justify-between">
+              <span className={`flex items-center gap-2 font-medium ${isDark ? "text-zinc-300" : "text-zinc-700"}`}>
+                <Maximize2 className="size-3.5 text-zinc-400" /> Resolution
               </span>
-              <span className="font-mono font-medium">
+              <span className={`font-mono font-semibold ${isDark ? "text-white" : "text-zinc-900"}`}>
                 {photo.width || 1920} × {photo.height || 1080}
               </span>
             </div>
 
-            <div className="flex items-center justify-between text-zinc-400">
-              <span className="flex items-center gap-2">
-                <FileText className="size-3.5" /> Format
+            <div className="flex items-center justify-between">
+              <span className={`flex items-center gap-2 font-medium ${isDark ? "text-zinc-300" : "text-zinc-700"}`}>
+                <FileText className="size-3.5 text-zinc-400" /> Format
               </span>
-              <span className="font-mono uppercase font-bold">
+              <span className={`font-mono uppercase font-bold ${isDark ? "text-white" : "text-zinc-900"}`}>
                 {photo.format || "JPG"}
               </span>
             </div>
 
-            <div className="flex items-center justify-between text-zinc-400">
-              <span className="flex items-center gap-2">
-                <Calendar className="size-3.5" /> Created
+            <div className="flex items-center justify-between">
+              <span className={`flex items-center gap-2 font-medium ${isDark ? "text-zinc-300" : "text-zinc-700"}`}>
+                <Calendar className="size-3.5 text-zinc-400" /> Created
               </span>
-              <span className="font-mono text-[11px]">
+              <span className={`font-mono font-semibold text-[11px] ${isDark ? "text-white" : "text-zinc-900"}`}>
                 {photo.created_at ? new Date(photo.created_at).toLocaleDateString() : "2026-07-20"}
               </span>
             </div>
 
-            <div className="flex items-center justify-between text-zinc-400">
-              <span className="flex items-center gap-2">
-                <Layers className="size-3.5" /> Storage Engine
+            <div className="flex items-center justify-between">
+              <span className={`flex items-center gap-2 font-medium ${isDark ? "text-zinc-300" : "text-zinc-700"}`}>
+                <Layers className="size-3.5 text-zinc-400" /> Storage Engine
               </span>
-              <span className="font-mono text-[11px]">
+              <span className={`font-mono font-semibold text-[11px] ${isDark ? "text-white" : "text-zinc-900"}`}>
                 Cloudinary CDN
               </span>
             </div>
           </div>
 
           {/* Tags */}
-          <div className="space-y-2 pt-2 border-t border-zinc-800">
-            <div className="text-xs font-medium text-zinc-400 flex items-center gap-1.5">
-              <Tag className="size-3.5" /> Associated Tags
+          <div className="space-y-2 pt-2 border-t border-zinc-200 dark:border-zinc-800">
+            <div className={`text-xs font-medium flex items-center gap-1.5 ${isDark ? "text-zinc-300" : "text-zinc-700"}`}>
+              <Tag className="size-3.5 text-zinc-400" /> Associated Tags
             </div>
             <div className="flex flex-wrap gap-1.5">
               {(photo.tags || ["landscape", "photography", "hd"]).map((t: string, idx: number) => (
@@ -226,8 +275,8 @@ export default function ImageDetailModal({
                   key={idx}
                   className={`px-2.5 py-1 rounded-full text-[11px] font-mono border ${
                     isDark
-                      ? "bg-zinc-900 border-zinc-800 text-zinc-300"
-                      : "bg-zinc-100 border-zinc-300 text-zinc-700"
+                      ? "bg-zinc-900 border-zinc-800 text-zinc-200"
+                      : "bg-zinc-100 border-zinc-300 text-zinc-800 font-semibold"
                   }`}
                 >
                   #{t}
@@ -238,20 +287,20 @@ export default function ImageDetailModal({
 
           {/* Download Action */}
           <div className="pt-2">
-            <a
-              href={imageUrl}
-              target="_blank"
-              rel="noreferrer"
-              download
-              className={`w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full font-semibold text-xs transition-all ${
+            <button
+              onClick={handleDownload}
+              disabled={downloading}
+              className={`w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full font-semibold text-xs transition-all cursor-pointer shadow-sm ${
                 isDark ? "bg-white text-black hover:bg-zinc-200" : "bg-black text-white hover:bg-zinc-800"
               }`}
             >
-              <Download className="size-3.5" /> Download Full Resolution
-            </a>
+              {downloading ? <Loader2 className="size-3.5 animate-spin" /> : <Download className="size-3.5" />}
+              <span>{downloading ? "Downloading..." : "Download Full Resolution"}</span>
+            </button>
           </div>
         </div>
       </div>
     </div>
   );
 }
+

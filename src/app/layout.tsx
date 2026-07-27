@@ -17,6 +17,11 @@ export const metadata: Metadata = {
   title: "Lumina — Digital Asset Management & Cloud Gallery Platform",
   description:
     "High-performance cloud media management, tag-based photo curation, and real-time image transformation platform built with Next.js 14 and Cloudinary.",
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon-32x32.png",
+    apple: "/apple-touch-icon.png",
+  },
   openGraph: {
     title: "Lumina — Digital Asset Management Platform",
     description: "High-performance cloud media management & tag-based photo curation.",

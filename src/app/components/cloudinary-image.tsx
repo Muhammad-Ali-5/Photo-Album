@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Heart, Maximize2 } from "lucide-react";
+import { Heart, Maximize2, Trash2 } from "lucide-react";
 import { useFavorites } from "./FavoritesContext";
+import { useMedia } from "./MediaContext";
+import { useTheme } from "./ThemeContext";
 
 interface CloudinaryImageProps {
   props: any;
@@ -18,16 +20,30 @@ export default function CloudinaryImage({
 }: CloudinaryImageProps) {
   const [isHovered, setIsHovered] = useState(false);
   const { isFavorited, toggleFavorite } = useFavorites();
+  const { deletePhoto } = useMedia();
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   const favorited = isFavorited(props.public_id);
 
   const imageUrl = props.secure_url || `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/${props.public_id}`;
+
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (window.confirm("Delete this image permanently?")) {
+      await deletePhoto(props.public_id);
+    }
+  };
 
   return (
     <div
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={() => onSelectPhoto?.(props)}
-      className="group relative rounded-2xl overflow-hidden glass-card bg-zinc-900/60 border-zinc-800 shadow-md cursor-pointer transition-all duration-200 hover:border-zinc-500"
+      className={`group relative rounded-2xl overflow-hidden border shadow-sm cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 ${
+        isDark
+          ? "bg-zinc-900/90 border-zinc-800 hover:border-zinc-600"
+          : "bg-white border-zinc-200/90 hover:border-zinc-400"
+      }`}
     >
       {/* Photo Element */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -40,7 +56,7 @@ export default function CloudinaryImage({
 
       {/* Hover Overlay Container */}
       <div
-        className={`absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent p-4 flex flex-col justify-between transition-opacity duration-200 ${
+        className={`absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent p-3.5 flex flex-col justify-between transition-opacity duration-200 ${
           isHovered ? "opacity-100" : "opacity-0"
         }`}
       >
@@ -61,9 +77,19 @@ export default function CloudinaryImage({
             <Heart className={`size-3.5 ${favorited ? "fill-white text-white" : ""}`} />
           </button>
 
-          <span className="p-2 rounded-full bg-black/60 text-zinc-300 hover:text-white backdrop-blur-md border border-zinc-700">
-            <Maximize2 className="size-3.5" />
-          </span>
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={handleDelete}
+              className="p-2 rounded-full bg-red-600/80 hover:bg-red-600 text-white backdrop-blur-md border border-red-500/50 transition-all cursor-pointer"
+              title="Delete Image"
+            >
+              <Trash2 className="size-3.5" />
+            </button>
+
+            <span className="p-2 rounded-full bg-black/60 text-zinc-300 hover:text-white backdrop-blur-md border border-zinc-700">
+              <Maximize2 className="size-3.5" />
+            </span>
+          </div>
         </div>
 
         {/* Bottom Metadata Info */}
@@ -75,7 +101,7 @@ export default function CloudinaryImage({
             {(props.tags || ["hd"]).slice(0, 3).map((tag: string, i: number) => (
               <span
                 key={i}
-                className="px-2 py-0.5 rounded-full bg-white/10 text-zinc-300 text-[10px] font-mono border border-white/15"
+                className="px-2 py-0.5 rounded-full bg-white/10 text-zinc-200 text-[10px] font-mono border border-white/20 backdrop-blur-sm"
               >
                 #{tag}
               </span>
@@ -86,3 +112,4 @@ export default function CloudinaryImage({
     </div>
   );
 }
+

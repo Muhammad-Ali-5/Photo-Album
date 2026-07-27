@@ -1,6 +1,7 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useState } from "react";
+import { toggle_favorite_tag } from "./Get_data";
 
 interface FavoritesContextType {
   favorites: string[];
@@ -17,21 +18,17 @@ const FavoritesContext = createContext<FavoritesContextType>({
 export function FavoritesProvider({ children }: { children: React.ReactNode }) {
   const [favorites, setFavorites] = useState<string[]>(["sample_architecture_1"]);
 
-  useEffect(() => {
-    const saved = localStorage.getItem("lumina_favorites");
-    if (saved) {
-      try {
-        setFavorites(JSON.parse(saved));
-      } catch {}
-    }
-  }, []);
-
   const toggleFavorite = (publicId: string) => {
     setFavorites((prev) => {
-      const next = prev.includes(publicId)
+      const isFav = prev.includes(publicId);
+      const next = isFav
         ? prev.filter((id) => id !== publicId)
         : [...prev, publicId];
-      localStorage.setItem("lumina_favorites", JSON.stringify(next));
+
+      toggle_favorite_tag(publicId, !isFav).catch((err) => {
+        console.error("Failed to sync favorite to Cloudinary:", err);
+      });
+
       return next;
     });
   };
@@ -48,3 +45,4 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
 export function useFavorites() {
   return useContext(FavoritesContext);
 }
+
