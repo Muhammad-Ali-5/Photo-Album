@@ -33,28 +33,16 @@ export default function Upload_btn({ fetch_data }: UploadBtnProps) {
 
         const cloudRes = await upload_to_cloudinary(base64Data);
 
-        let newPhoto;
-        if (cloudRes.type === "Success" && cloudRes.photo) {
-          newPhoto = cloudRes.photo;
+        if (cloudRes.success && cloudRes.photo) {
+          addPhoto(cloudRes.photo);
+          fetch_data?.(cloudRes.photo);
         } else {
-          // Fallback to local Data URL preview if Cloudinary fails or offline
-          newPhoto = {
-            public_id: `upload_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
-            secure_url: base64Data,
-            tags: ["uploaded", "recent"],
-            width: 1200,
-            height: 800,
-            format: file.type.split("/")[1] || "jpg",
-            created_at: new Date().toISOString(),
-            bytes: file.size,
-          };
+          alert(cloudRes.message || "Failed to upload image to Cloudinary");
         }
-
-        addPhoto(newPhoto);
-        fetch_data?.(newPhoto);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to upload image:", err);
+      alert("Failed to upload image: " + (err?.message || "Unknown error"));
     } finally {
       setUploading(false);
       e.target.value = "";

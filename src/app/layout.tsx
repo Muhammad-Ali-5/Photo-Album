@@ -41,9 +41,9 @@ export default function RootLayout({
     <html lang="en" className="dark scroll-smooth">
       <body className={`${inter.className} bg-[#09090b] text-zinc-100 antialiased selection:bg-zinc-800 selection:text-white`}>
         <ThemeProvider>
-          <FavoritesProvider>
-            <MediaProvider>{children}</MediaProvider>
-          </FavoritesProvider>
+          <MediaProvider>
+            <FavoritesProvider>{children}</FavoritesProvider>
+          </MediaProvider>
         </ThemeProvider>
       </body>
     </html>

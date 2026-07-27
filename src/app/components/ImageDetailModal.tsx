@@ -44,8 +44,9 @@ export default function ImageDetailModal({
   const [copied, setCopied] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [assigning, setAssigning] = useState(false);
+  const [feedback, setFeedback] = useState<{ text: string; error?: boolean } | null>(null);
   const [selectedAlbum, setSelectedAlbum] = useState("architecture");
-  const [assigned, setAssigned] = useState(false);
   const [albums, setAlbums] = useState<any[]>([
     { name: "Architecture & Urban", tag: "architecture" },
     { name: "Nature & Landscapes", tag: "nature" },
@@ -79,19 +80,32 @@ export default function ImageDetailModal({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleAssign = () => {
-    assignAlbum(photo.public_id, selectedAlbum);
-    onAssignAlbum?.(photo.public_id, selectedAlbum);
-    setAssigned(true);
-    setTimeout(() => setAssigned(false), 2000);
+  const handleAssign = async () => {
+    setAssigning(true);
+    setFeedback(null);
+    const res = await assignAlbum(photo.public_id, selectedAlbum);
+    setAssigning(false);
+
+    if (res.success) {
+      onAssignAlbum?.(photo.public_id, selectedAlbum);
+      setFeedback({ text: res.message || `Assigned to #${selectedAlbum}` });
+    } else {
+      setFeedback({ text: res.message || "Failed to assign album on Cloudinary", error: true });
+    }
+
+    setTimeout(() => setFeedback(null), 3500);
   };
 
   const handleDelete = async () => {
-    if (window.confirm("Are you sure you want to delete this image?")) {
+    if (window.confirm("Delete this image permanently from Cloudinary?")) {
       setDeleting(true);
-      await deletePhoto(photo.public_id);
+      const res = await deletePhoto(photo.public_id);
       setDeleting(false);
-      onClose();
+      if (res.success) {
+        onClose();
+      } else {
+        alert(res.message || "Failed to delete image on Cloudinary");
+      }
     }
   };
 
@@ -217,12 +231,30 @@ export default function ImageDetailModal({
                 variant="primary"
                 size="sm"
                 onClick={handleAssign}
+                disabled={assigning}
                 className="rounded-full text-xs px-3 py-1.5 flex items-center gap-1 cursor-pointer shrink-0"
               >
-                {assigned ? <FolderCheck className="size-3.5" /> : <FolderPlus className="size-3.5" />}
-                <span>{assigned ? "Assigned!" : "Assign"}</span>
+                {assigning ? (
+                  <Loader2 className="size-3.5 animate-spin" />
+                ) : (
+                  <FolderPlus className="size-3.5" />
+                )}
+                <span>{assigning ? "Assigning..." : "Assign"}</span>
               </Button>
             </div>
+
+            {feedback && (
+              <div
+                className={`text-[11px] px-3 py-1.5 rounded-full font-semibold flex items-center gap-1.5 transition-all ${
+                  feedback.error
+                    ? "bg-red-500/10 text-red-600 border border-red-500/30"
+                    : "bg-emerald-500/10 text-emerald-600 border border-emerald-500/30 dark:text-emerald-400"
+                }`}
+              >
+                {!feedback.error && <FolderCheck className="size-3.5 shrink-0" />}
+                <span>{feedback.text}</span>
+              </div>
+            )}
           </div>
 
           {/* Technical Specs List — High Contrast Colors */}

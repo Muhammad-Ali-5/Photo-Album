@@ -1,5 +1,6 @@
 "use server";
 import cloudinary from "cloudinary";
+import { revalidatePath } from "next/cache";
 import { samplePhotos } from "./sampleData";
 
 function getCloudinaryConfig() {
@@ -28,7 +29,7 @@ export async function get_images() {
       .expression("resource_type:image")
       .with_field("tags")
       .sort_by("created_at", "desc")
-      .max_results(30)
+      .max_results(50)
       .execute();
 
     if (!res?.resources || res.resources.length === 0) {
@@ -44,7 +45,7 @@ export async function get_images() {
 export async function upload_to_cloudinary(base64Data: string) {
   try {
     if (!getCloudinaryConfig()) {
-      return { type: "Error", message: "Cloudinary configuration missing" };
+      return { success: false, message: "Cloudinary configuration missing. Check .env credentials." };
     }
 
     const result = await cloudinary.v2.uploader.upload(base64Data, {
@@ -54,7 +55,8 @@ export async function upload_to_cloudinary(base64Data: string) {
     });
 
     return {
-      type: "Success",
+      success: true,
+      message: "Media uploaded successfully to Cloudinary!",
       photo: {
         public_id: result.public_id,
         secure_url: result.secure_url,
@@ -68,32 +70,44 @@ export async function upload_to_cloudinary(base64Data: string) {
     };
   } catch (error: any) {
     console.error("Cloudinary Upload Error:", error);
-    return { type: "Error", message: error?.message || "Cloudinary upload failed" };
+    return { success: false, message: error?.message || "Cloudinary upload failed" };
   }
 }
 
-export async function add_album(public_id: string, albumName: string) {
+export async function add_album(public_id: string, newAlbumTag: string, oldAlbumTags: string[] = []) {
   try {
     if (!getCloudinaryConfig()) {
-      return { type: "Success", message: "Simulated album assignment" };
+      return { success: true, message: `Assigned to ${newAlbumTag}` };
     }
 
-    // Tag asset with album name on Cloudinary
-    await cloudinary.v2.uploader.add_tag(albumName.toLowerCase(), [public_id]);
+    const cleanNewTag = newAlbumTag.toLowerCase().trim();
 
-    const parts = public_id.split("/");
-    const id = parts.pop();
-    const result = await cloudinary.v2.uploader.rename(public_id, `${albumName}/${id}`);
-    return { type: "Success", result };
-  } catch (error) {
-    return { type: "Success", message: "Album tag assigned on Cloudinary" };
+    // 1. Strip previous album tags from Cloudinary asset
+    if (oldAlbumTags && oldAlbumTags.length > 0) {
+      for (const oldTag of oldAlbumTags) {
+        if (oldTag.toLowerCase() !== cleanNewTag) {
+          try {
+            await cloudinary.v2.uploader.remove_tag(oldTag.toLowerCase(), [public_id]);
+          } catch {}
+        }
+      }
+    }
+
+    // 2. Add new album tag to Cloudinary asset
+    await cloudinary.v2.uploader.add_tag(cleanNewTag, [public_id]);
+
+    revalidatePath("/", "layout");
+    return { success: true, message: `Successfully assigned asset to album #${cleanNewTag}` };
+  } catch (error: any) {
+    console.error("Cloudinary Album Assignment Error:", error);
+    return { success: false, message: error?.message || "Failed to assign album on Cloudinary" };
   }
 }
 
 export async function toggle_favorite_tag(public_id: string, isFavorited: boolean) {
   try {
     if (!getCloudinaryConfig()) {
-      return { type: "Success", message: "Simulated favorite toggle" };
+      return { success: true, message: "Favorite toggled" };
     }
 
     if (isFavorited) {
@@ -101,9 +115,10 @@ export async function toggle_favorite_tag(public_id: string, isFavorited: boolea
     } else {
       await cloudinary.v2.uploader.remove_tag("favorite", [public_id]);
     }
-    return { type: "Success" };
-  } catch (error) {
-    return { type: "Error", message: "Failed to sync favorite with Cloudinary" };
+    return { success: true, message: isFavorited ? "Marked as Favorite!" : "Removed from Favorites!" };
+  } catch (error: any) {
+    console.error("Cloudinary Favorite Toggle Error:", error);
+    return { success: false, message: error?.message || "Failed to update favorite on Cloudinary" };
   }
 }
 
@@ -146,40 +161,47 @@ export async function get_albums() {
 export async function create_cloudinary_folder(folderName: string) {
   try {
     if (!getCloudinaryConfig()) {
-      return { type: "Success" };
+      return { success: true, message: "Simulated folder creation" };
     }
     const folderTag = folderName.toLowerCase().replace(/\s+/g, "-");
-    const result = await cloudinary.v2.api.create_folder(folderTag);
-    return { type: "Success", result };
+    await cloudinary.v2.api.create_folder(folderTag);
+    return { success: true, message: `Created album folder '${folderName}' on Cloudinary` };
   } catch (error: any) {
-    return { type: "Success", message: "Folder creation processed" };
+    console.error("Cloudinary Create Folder Error:", error);
+    return { success: false, message: error?.message || "Failed to create folder on Cloudinary" };
   }
 }
 
 export async function delete_cloudinary_folder(folderName: string) {
   try {
     if (!getCloudinaryConfig()) {
-      return { type: "Success" };
+      return { success: true, message: "Simulated folder deletion" };
     }
-    const result = await cloudinary.v2.api.delete_folder(folderName);
-    return { type: "Success", result };
+    await cloudinary.v2.api.delete_folder(folderName);
+    return { success: true, message: `Deleted album folder '${folderName}' from Cloudinary` };
   } catch (error: any) {
-    return { type: "Success", message: "Folder deletion processed" };
+    console.error("Cloudinary Delete Folder Error:", error);
+    return { success: false, message: error?.message || "Failed to delete folder on Cloudinary" };
   }
 }
 
 export async function delete_img(public_id: string) {
   try {
     if (!getCloudinaryConfig()) {
-      return { type: "Success", message: "Simulated image deletion" };
+      return { success: true, message: "Simulated image deletion" };
     }
 
     const result = await cloudinary.v2.uploader.destroy(public_id);
-    return { type: "Success", result };
-  } catch (error) {
-    return { type: "Error", message: "Failed to delete image" };
+    if (result.result === "ok" || result.result === "not_found") {
+      return { success: true, message: "Image deleted successfully from Cloudinary!" };
+    }
+    return { success: false, message: `Cloudinary response: ${result.result}` };
+  } catch (error: any) {
+    console.error("Cloudinary Delete Image Error:", error);
+    return { success: false, message: error?.message || "Failed to delete image on Cloudinary" };
   }
 }
+
 
 
 

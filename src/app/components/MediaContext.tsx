@@ -7,35 +7,36 @@ import { delete_img, add_album, get_images } from "./Get_data";
 interface MediaContextType {
   photos: any[];
   addPhoto: (newPhoto: any) => void;
-  deletePhoto: (photoId: string) => Promise<void>;
-  assignAlbum: (photoId: string, albumTag: string) => Promise<void>;
+  deletePhoto: (photoId: string) => Promise<{ success: boolean; message: string }>;
+  assignAlbum: (photoId: string, albumTag: string) => Promise<{ success: boolean; message: string }>;
   getAlbumPhotos: (albumTag: string) => any[];
   refreshPhotos: () => Promise<void>;
+  setPhotoTags: (photoId: string, tags: string[]) => void;
 }
 
 const MediaContext = createContext<MediaContextType>({
   photos: [],
   addPhoto: () => {},
-  deletePhoto: async () => {},
-  assignAlbum: async () => {},
+  deletePhoto: async () => ({ success: false, message: "" }),
+  assignAlbum: async () => ({ success: false, message: "" }),
   getAlbumPhotos: () => [],
   refreshPhotos: async () => {},
+  setPhotoTags: () => {},
 });
 
 export function MediaProvider({ children }: { children: React.ReactNode }) {
-  const [photos, setPhotos] = useState<any[]>(samplePhotos);
+  const [photos, setPhotos] = useState<any[]>([]);
 
   const fetchCloudinaryPhotos = async () => {
     try {
       const cloudData = await get_images();
       if (Array.isArray(cloudData) && cloudData.length > 0) {
-        const photoMap = new Map<string, any>();
-        samplePhotos.forEach((p) => photoMap.set(p.public_id, p));
-        cloudData.forEach((p) => photoMap.set(p.public_id, p));
-        setPhotos(Array.from(photoMap.values()));
+        setPhotos(cloudData);
+      } else {
+        setPhotos(samplePhotos);
       }
     } catch (error) {
-      console.error("Failed to fetch photos from Cloudinary:", error);
+      setPhotos(samplePhotos);
     }
   };
 
@@ -47,41 +48,59 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
     setPhotos((prev) => [newPhoto, ...prev.filter((p) => p.public_id !== newPhoto.public_id)]);
   };
 
+  const setPhotoTags = (photoId: string, tags: string[]) => {
+    setPhotos((prev) =>
+      prev.map((p) => (p.public_id === photoId ? { ...p, tags } : p))
+    );
+  };
+
   const deletePhoto = async (photoId: string) => {
-    setPhotos((prev) => prev.filter((p) => p.public_id !== photoId));
     try {
-      await delete_img(photoId);
-      await fetchCloudinaryPhotos();
-    } catch (err) {
+      const res = await delete_img(photoId);
+      if (res.success) {
+        setPhotos((prev) => prev.filter((p) => p.public_id !== photoId));
+        await fetchCloudinaryPhotos();
+      }
+      return res;
+    } catch (err: any) {
       console.error("Failed to delete image on Cloudinary:", err);
+      return { success: false, message: err?.message || "Failed to delete image on Cloudinary" };
     }
   };
 
   const assignAlbum = async (photoId: string, albumTag: string) => {
-    const knownAlbumTags = ["architecture", "nature", "cyberpunk", "minimalist"];
-    const targetTag = albumTag.toLowerCase();
+    const targetTag = albumTag.toLowerCase().trim();
 
-    setPhotos((prev) =>
-      prev.map((photo) => {
-        if (photo.public_id === photoId) {
-          const currentTags: string[] = photo.tags || [];
-          const nonAlbumTags = currentTags.filter(
-            (t) => !knownAlbumTags.includes(t.toLowerCase()) && t.toLowerCase() !== targetTag
-          );
-          return {
-            ...photo,
-            tags: Array.from(new Set([...nonAlbumTags, targetTag])),
-          };
-        }
-        return photo;
-      })
-    );
+    // Find targeted photo to extract existing album tags
+    const targetPhoto = photos.find((p) => p.public_id === photoId);
+    const currentTags: string[] = targetPhoto?.tags || [];
 
+    // Execute Cloudinary tag reassignment synchronously
     try {
-      await add_album(photoId, targetTag);
-      await fetchCloudinaryPhotos();
-    } catch (err) {
+      const res = await add_album(photoId, targetTag, currentTags);
+
+      if (res.success) {
+        setPhotos((prev) =>
+          prev.map((photo) => {
+            if (photo.public_id === photoId) {
+              const nonAlbumTags = (photo.tags || []).filter(
+                (t: string) => !currentTags.includes(t.toLowerCase()) && t.toLowerCase() !== targetTag
+              );
+              return {
+                ...photo,
+                tags: Array.from(new Set([...nonAlbumTags, targetTag])),
+              };
+            }
+            return photo;
+          })
+        );
+        await fetchCloudinaryPhotos();
+      }
+
+      return res;
+    } catch (err: any) {
       console.error("Failed to update album on Cloudinary:", err);
+      return { success: false, message: err?.message || "Failed to update album on Cloudinary" };
     }
   };
 
@@ -100,12 +119,14 @@ export function MediaProvider({ children }: { children: React.ReactNode }) {
         assignAlbum,
         getAlbumPhotos,
         refreshPhotos: fetchCloudinaryPhotos,
+        setPhotoTags,
       }}
     >
       {children}
     </MediaContext.Provider>
   );
 }
+
 
 export function useMedia() {
   return useContext(MediaContext);

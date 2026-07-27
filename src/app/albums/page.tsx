@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Navbar from "../components/Navbar";
 import Side_Nav from "../components/Side_Nav";
 import { FolderHeart, Image as ImageIcon, ArrowRight, Plus, Trash2, FolderPlus } from "lucide-react";
@@ -23,13 +23,13 @@ const defaultAlbums = [
   { id: "1", name: "Architecture & Urban", count: 0, cover: "", tag: "architecture" },
   { id: "2", name: "Nature & Landscapes", count: 0, cover: "", tag: "nature" },
   { id: "3", name: "Cyberpunk & Neon", count: 0, cover: "", tag: "cyberpunk" },
-  { id: "4", name: "Minimalist Interiors", count: 0, cover: "", tag: "minimalist" },
+  { id: "4", name: "Minimalist Interiors", tag: "minimalist" },
 ];
 
 export default function AlbumsPage() {
   const { theme } = useTheme();
   const isDark = theme === "dark";
-  const { getAlbumPhotos } = useMedia();
+  const { photos, getAlbumPhotos } = useMedia();
 
   const [albums, setAlbums] = useState(defaultAlbums);
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -50,41 +50,81 @@ export default function AlbumsPage() {
     fetchCloudinaryAlbums();
   }, []);
 
+  // Dynamically compute all active albums combining Cloudinary folders + photo tags
+  const allAlbums = useMemo(() => {
+    const albumMap = new Map<string, any>();
+    albums.forEach((a) => albumMap.set(a.tag.toLowerCase(), a));
+
+    (photos || []).forEach((photo) => {
+      if (Array.isArray(photo.tags)) {
+        photo.tags.forEach((tag: string) => {
+          const cleanTag = tag.toLowerCase().trim();
+          if (cleanTag !== "uploaded" && cleanTag !== "recent" && cleanTag !== "favorite") {
+            if (!albumMap.has(cleanTag)) {
+              albumMap.set(cleanTag, {
+                id: cleanTag,
+                name: cleanTag.replace(/[-_]/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
+                count: 0,
+                cover: "",
+                tag: cleanTag,
+              });
+            }
+          }
+        });
+      }
+    });
+
+    return Array.from(albumMap.values());
+  }, [albums, photos]);
+
+  const [creating, setCreating] = useState(false);
+
   const handleCreateAlbum = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newAlbumName.trim()) return;
+    if (!newAlbumName.trim() || creating) return;
 
-    const tag = newAlbumName.toLowerCase().replace(/\s+/g, "-");
-    const newFolder = {
-      id: Date.now().toString(),
-      name: newAlbumName,
-      count: 0,
-      cover: "",
-      tag: tag,
-    };
-
-    setAlbums((prev) => [...prev, newFolder]);
-    setNewAlbumName("");
-    setCreateModalOpen(false);
-
+    setCreating(true);
     try {
-      await create_cloudinary_folder(newAlbumName);
-      await fetchCloudinaryAlbums();
-    } catch (err) {
-      console.error("Failed to create folder on Cloudinary:", err);
+      const res = await create_cloudinary_folder(newAlbumName);
+      if (res.success) {
+        const tag = newAlbumName.toLowerCase().replace(/\s+/g, "-");
+        const newFolder = {
+          id: Date.now().toString(),
+          name: newAlbumName,
+          count: 0,
+          cover: "",
+          tag: tag,
+        };
+        setAlbums((prev) => [...prev, newFolder]);
+        setNewAlbumName("");
+        setCreateModalOpen(false);
+        await fetchCloudinaryAlbums();
+      } else {
+        alert(res.message || "Failed to create folder on Cloudinary");
+      }
+    } catch (err: any) {
+      alert("Error creating album folder on Cloudinary: " + (err?.message || "Unknown error"));
+    } finally {
+      setCreating(false);
     }
   };
 
   const handleDeleteAlbum = async (id: string, tag: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setAlbums((prev) => prev.filter((a) => a.id !== id));
 
-    try {
-      await delete_cloudinary_folder(tag);
-      await fetchCloudinaryAlbums();
-    } catch (err) {
-      console.error("Failed to delete folder on Cloudinary:", err);
+    if (window.confirm(`Delete folder '${tag}' from Cloudinary?`)) {
+      try {
+        const res = await delete_cloudinary_folder(tag);
+        if (res.success) {
+          setAlbums((prev) => prev.filter((a) => a.id !== id));
+          await fetchCloudinaryAlbums();
+        } else {
+          alert(res.message || "Failed to delete folder on Cloudinary");
+        }
+      } catch (err: any) {
+        alert("Error deleting folder on Cloudinary: " + (err?.message || "Unknown error"));
+      }
     }
   };
 
@@ -119,15 +159,15 @@ export default function AlbumsPage() {
               </Button>
 
               <span className="text-xs font-mono text-zinc-400 hidden sm:inline">
-                {albums.length} Folders
+                {allAlbums.length} Folders
               </span>
             </div>
           </div>
 
           {/* Albums Grid */}
-          {albums.length > 0 ? (
+          {allAlbums.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {albums.map((album) => {
+              {allAlbums.map((album) => {
                 const albumPhotos = getAlbumPhotos(album.tag);
                 const count = albumPhotos.length;
                 const coverUrl =

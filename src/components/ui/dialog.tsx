@@ -38,7 +38,7 @@ function DialogContent({
   return (
     <div
       className={cn(
-        "glass-panel bg-[#0f0c1d] border-purple-500/40 p-6 sm:p-7 text-white max-w-md rounded-3xl shadow-2xl relative animate-in zoom-in-95 duration-200",
+        "p-6 sm:p-7 max-w-md rounded-3xl shadow-2xl relative animate-in zoom-in-95 duration-200 border transition-colors",
         className
       )}
       {...props}
@@ -46,7 +46,7 @@ function DialogContent({
       {onClose && (
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-1.5 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-colors cursor-pointer"
+          className="absolute top-4 right-4 p-1.5 text-zinc-400 hover:text-zinc-700 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors cursor-pointer"
         >
           <X className="size-4" />
         </button>
@@ -65,11 +65,11 @@ function DialogFooter({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 function DialogTitle({ className, ...props }: React.ComponentProps<"h3">) {
-  return <h3 className={cn("text-lg font-bold text-white", className)} {...props} />;
+  return <h3 className={cn("text-lg font-bold", className)} {...props} />;
 }
 
 function DialogDescription({ className, ...props }: React.ComponentProps<"p">) {
-  return <p className={cn("text-xs text-gray-300", className)} {...props} />;
+  return <p className={cn("text-xs text-zinc-500 dark:text-zinc-400", className)} {...props} />;
 }
 
 export {
