@@ -22,6 +22,11 @@ export default function AlbumViewPage({ params }: { params: { album: string } })
     p.tags?.some((t: string) => t.toLowerCase() === albumTag.toLowerCase())
   );
 
+  const MAX_COLUMNS = 4;
+  const getColumnPhotos = (colIndex: number) => {
+    return albumPhotos.filter((_, idx) => idx % MAX_COLUMNS === colIndex);
+  };
+
   return (
     <div className={`min-h-screen flex flex-col ${isDark ? "bg-[#09090b] text-zinc-100" : "bg-white text-zinc-900"}`}>
       <Navbar />
@@ -57,24 +62,37 @@ export default function AlbumViewPage({ params }: { params: { album: string } })
             </span>
           </div>
 
+          {/* Masonry Grid */}
           {albumPhotos.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-start">
-              {albumPhotos.map((photo) => (
-                <CloudinaryImage
-                  key={photo.public_id}
-                  props={photo}
-                  onSelectPhoto={setSelectedPhoto}
-                />
+              {[0, 1, 2, 3].map((colIdx) => (
+                <div key={colIdx} className="space-y-4">
+                  {getColumnPhotos(colIdx).map((photo) => (
+                    <CloudinaryImage
+                      key={photo.public_id}
+                      props={photo}
+                      onSelectPhoto={setSelectedPhoto}
+                    />
+                  ))}
+                </div>
               ))}
             </div>
           ) : (
-            <div className="py-16 text-center space-y-3 glass-panel rounded-3xl p-8 max-w-md mx-auto">
-              <div className="size-12 mx-auto rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400">
+            <div className={`py-16 text-center space-y-3 rounded-3xl border-2 border-dashed p-8 max-w-md mx-auto transition-colors ${
+              isDark
+                ? "bg-zinc-900/50 border-zinc-800 text-zinc-100"
+                : "bg-zinc-50/80 border-zinc-300 text-zinc-900 shadow-sm"
+            }`}>
+              <div className={`size-12 mx-auto rounded-full border flex items-center justify-center ${
+                isDark
+                  ? "bg-zinc-900 border-zinc-800 text-zinc-400"
+                  : "bg-zinc-100 border-zinc-300 text-zinc-600"
+              }`}>
                 <ImageIcon className="size-6" />
               </div>
-              <h3 className="text-base font-bold">Album Folder is Empty</h3>
-              <p className="text-xs text-zinc-400">
-                Open any photo from the gallery and use &quot;Move to Album Folder&quot; to assign images to <span className="font-mono text-white">#{albumTag}</span>.
+              <h3 className={`text-base font-bold ${isDark ? "text-white" : "text-zinc-900"}`}>Album Folder is Empty</h3>
+              <p className={`text-xs ${isDark ? "text-zinc-400" : "text-zinc-600"}`}>
+                Open any photo from the gallery and use &quot;Move to Album Folder&quot; to assign images to <span className={`font-mono font-bold ${isDark ? "text-white" : "text-black"}`}>#{albumTag}</span>.
               </p>
             </div>
           )}

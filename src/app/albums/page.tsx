@@ -228,10 +228,20 @@ export default function AlbumsPage() {
               })}
             </div>
           ) : (
-            <div className="py-16 text-center space-y-3 glass-panel rounded-3xl p-8 max-w-md mx-auto">
-              <FolderPlus className="size-10 mx-auto text-zinc-500" />
-              <h3 className="text-base font-bold">No Albums Created</h3>
-              <p className="text-xs text-zinc-400">Click &quot;Create New Album&quot; to organize your media assets into folders.</p>
+            <div className={`py-16 text-center space-y-3 rounded-3xl border-2 border-dashed p-8 max-w-md mx-auto transition-colors ${
+              isDark
+                ? "bg-zinc-900/50 border-zinc-800 text-zinc-100"
+                : "bg-zinc-50/80 border-zinc-300 text-zinc-900 shadow-sm"
+            }`}>
+              <div className={`size-12 mx-auto rounded-full border flex items-center justify-center ${
+                isDark
+                  ? "bg-zinc-900 border-zinc-800 text-zinc-400"
+                  : "bg-zinc-100 border-zinc-300 text-zinc-600"
+              }`}>
+                <FolderPlus className="size-6" />
+              </div>
+              <h3 className={`text-base font-bold ${isDark ? "text-white" : "text-zinc-900"}`}>No Albums Created</h3>
+              <p className={`text-xs ${isDark ? "text-zinc-400" : "text-zinc-600"}`}>Click &quot;Create New Album&quot; to organize your media assets into folders.</p>
             </div>
           )}
         </main>

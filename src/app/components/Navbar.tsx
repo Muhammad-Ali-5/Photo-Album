@@ -3,21 +3,15 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Search, Sun, Moon, Menu, X, Image as ImageIcon, FolderHeart, Heart } from "lucide-react";
+import { Sun, Moon, Menu, X, Image as ImageIcon, FolderHeart, Heart } from "lucide-react";
 import Upload_btn from "./upload_btn";
 import { useTheme } from "./ThemeContext";
 
 interface NavbarProps {
-  searchQuery?: string;
-  onSearchChange?: (query: string) => void;
   onUploadSuccess?: () => void;
 }
 
-export default function Navbar({
-  searchQuery = "",
-  onSearchChange,
-  onUploadSuccess,
-}: NavbarProps) {
+export default function Navbar({ onUploadSuccess }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const isDark = theme === "dark";
@@ -58,24 +52,6 @@ export default function Navbar({
           </div>
         </Link>
 
-        {/* Global Search Bar (Desktop) */}
-        <div className="hidden md:flex items-center flex-1 max-w-md mx-4">
-          <div className="relative w-full">
-            <Search className={`absolute left-3.5 top-1/2 -translate-y-1/2 size-4 ${isDark ? "text-zinc-400" : "text-zinc-500"}`} />
-            <input
-              type="text"
-              placeholder="Search gallery by tag, name, or format..."
-              value={searchQuery}
-              onChange={(e) => onSearchChange?.(e.target.value)}
-              className={`w-full pl-10 pr-4 py-2 text-xs rounded-full outline-none transition-all ${
-                isDark
-                  ? "bg-zinc-900 border border-zinc-800 text-white placeholder-zinc-500 focus:border-zinc-500"
-                  : "bg-zinc-100 border border-zinc-300 text-zinc-900 placeholder-zinc-400 focus:border-zinc-500"
-              }`}
-            />
-          </div>
-        </div>
-
         {/* Right Actions */}
         <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
           {/* Theme Toggle Button */}
@@ -106,63 +82,45 @@ export default function Navbar({
         </div>
       </div>
 
-      {/* Mobile Drawer (Search + Navigation Links) */}
+      {/* Mobile Drawer Navigation Links */}
       {mobileMenuOpen && (
-        <div className={`md:hidden pt-3 mt-3 border-t flex flex-col gap-3 animate-in fade-in ${
+        <div className={`md:hidden pt-3 mt-3 border-t flex flex-col gap-2 animate-in fade-in ${
           isDark ? "border-zinc-800 bg-[#09090b]" : "border-zinc-200 bg-white"
         }`}>
-          {/* Search Bar */}
-          <div className="relative w-full">
-            <Search className={`absolute left-3.5 top-1/2 -translate-y-1/2 size-4 ${isDark ? "text-zinc-400" : "text-zinc-500"}`} />
-            <input
-              type="text"
-              placeholder="Search assets by tag or name..."
-              value={searchQuery}
-              onChange={(e) => onSearchChange?.(e.target.value)}
-              className={`w-full pl-10 pr-4 py-2 text-xs rounded-full outline-none ${
-                isDark
-                  ? "bg-zinc-900 border border-zinc-800 text-white placeholder-zinc-500"
-                  : "bg-zinc-100 border border-zinc-300 text-zinc-900 placeholder-zinc-400"
-              }`}
-            />
-          </div>
-
-          {/* Navigation Links */}
-          <div className="space-y-1 pt-1">
-            <span className={`text-[10px] font-mono uppercase tracking-wider block px-1 mb-1 ${
-              isDark ? "text-zinc-500" : "text-zinc-400"
-            }`}>
-              Navigation
-            </span>
-            <div className="grid grid-cols-3 gap-2">
-              {navLinks.map((link) => {
-                const Icon = link.icon;
-                const isActive = pathname === link.href;
-                return (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-2xl text-xs font-semibold transition-all border ${
-                      isActive
-                        ? isDark
-                          ? "bg-white text-black border-white font-bold"
-                          : "bg-black text-white border-black font-bold"
-                        : isDark
-                        ? "bg-zinc-900/80 border-zinc-800 text-zinc-300 hover:bg-zinc-800"
-                        : "bg-zinc-50 border-zinc-200 text-zinc-700 hover:bg-zinc-100"
-                    }`}
-                  >
-                    <Icon className="size-4 shrink-0" />
-                    <span className="text-[11px] truncate">{link.name}</span>
-                  </Link>
-                );
-              })}
-            </div>
+          <span className={`text-[10px] font-mono uppercase tracking-wider block px-1 mb-1 ${
+            isDark ? "text-zinc-500" : "text-zinc-400"
+          }`}>
+            Navigation
+          </span>
+          <div className="grid grid-cols-3 gap-2">
+            {navLinks.map((link) => {
+              const Icon = link.icon;
+              const isActive = pathname === link.href;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-2xl text-xs font-semibold transition-all border ${
+                    isActive
+                      ? isDark
+                        ? "bg-white text-black border-white font-bold"
+                        : "bg-black text-white border-black font-bold"
+                      : isDark
+                      ? "bg-zinc-900/80 border-zinc-800 text-zinc-300 hover:bg-zinc-800"
+                      : "bg-zinc-50 border-zinc-200 text-zinc-700 hover:bg-zinc-100"
+                  }`}
+                >
+                  <Icon className="size-4 shrink-0" />
+                  <span className="text-[11px] truncate">{link.name}</span>
+                </Link>
+              );
+            })}
           </div>
         </div>
       )}
     </header>
   );
 }
+
 

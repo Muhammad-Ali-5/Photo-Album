@@ -20,6 +20,11 @@ export default function FavouritesPage() {
 
   const favoritePhotos = photos.filter((photo) => favorites.includes(photo.public_id));
 
+  const MAX_COLUMNS = 4;
+  const getColumnPhotos = (colIndex: number) => {
+    return favoritePhotos.filter((_, idx) => idx % MAX_COLUMNS === colIndex);
+  };
+
   return (
     <div className={`min-h-screen flex flex-col ${isDark ? "bg-[#09090b] text-zinc-100" : "bg-white text-zinc-900"}`}>
       <Navbar />
@@ -44,22 +49,36 @@ export default function FavouritesPage() {
             </span>
           </div>
 
-          {/* Grid */}
+          {/* Masonry Grid */}
           {favoritePhotos.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-start">
-              {favoritePhotos.map((photo) => (
-                <CloudinaryImage
-                  key={photo.public_id}
-                  props={photo}
-                  onSelectPhoto={setSelectedPhoto}
-                />
+              {[0, 1, 2, 3].map((colIdx) => (
+                <div key={colIdx} className="space-y-4">
+                  {getColumnPhotos(colIdx).map((photo) => (
+                    <CloudinaryImage
+                      key={photo.public_id}
+                      props={photo}
+                      onSelectPhoto={setSelectedPhoto}
+                    />
+                  ))}
+                </div>
               ))}
             </div>
           ) : (
-            <div className="py-16 text-center space-y-3 glass-panel rounded-3xl border-dashed border-zinc-800 p-8 max-w-md mx-auto">
-              <Heart className="size-10 mx-auto text-zinc-500" />
-              <h3 className="text-base font-bold">No Favorites Yet</h3>
-              <p className="text-xs text-zinc-400">
+            <div className={`py-16 text-center space-y-3 rounded-3xl border-2 border-dashed p-8 max-w-md mx-auto transition-colors ${
+              isDark
+                ? "bg-zinc-900/50 border-zinc-800 text-zinc-100"
+                : "bg-zinc-50/80 border-zinc-300 text-zinc-900 shadow-sm"
+            }`}>
+              <div className={`size-12 mx-auto rounded-full border flex items-center justify-center ${
+                isDark
+                  ? "bg-zinc-900 border-zinc-800 text-zinc-400"
+                  : "bg-zinc-100 border-zinc-300 text-zinc-600"
+              }`}>
+                <Heart className="size-6" />
+              </div>
+              <h3 className={`text-base font-bold ${isDark ? "text-white" : "text-zinc-900"}`}>No Favorites Yet</h3>
+              <p className={`text-xs ${isDark ? "text-zinc-400" : "text-zinc-600"}`}>
                 Click the heart icon on any photo card to add it to your curated favorites collection.
               </p>
             </div>

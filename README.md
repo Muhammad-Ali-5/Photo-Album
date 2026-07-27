@@ -13,7 +13,23 @@
 
 ---
 
-## ✨ Core Features & Architecture
+## 🖼️ Application Interface Gallery
+
+### 1. Main Gallery Grid & Search Interface
+![Lumina Main Gallery Interface](public/hero-preview.png)
+
+### 2. EXIF Metadata & Album Assignment Modal
+![Lumina Asset Detail Modal](public/asset-detail-modal.png)
+
+### 3. Dedicated Album Collection Folders
+![Lumina Album Collections](public/album-collections.png)
+
+### 4. Cloud-Synced Favorites Vault
+![Lumina Favorites Vault](public/favorites-vault.png)
+
+---
+
+## ✨ Core Features & Technical Highlights
 
 - ☁️ **Cloudinary API Integration**: Asset uploads, album assignments, favorite toggles, and asset deletions driven via Cloudinary Server Actions and API endpoints.
 - ⚡ **Synchronous Server Actions**: Operations await API execution with visual status indicators and feedback toasts.
@@ -55,7 +71,12 @@ CLOUDINARY_URL="cloudinary://your_api_key:your_api_secret@your_cloud_name"
 
 ```
 lumina-cloud-gallery/
-├── public/                     # Favicons, logo assets & public media
+├── public/                     # Screenshots & public media
+│   ├── hero-preview.png        # Main gallery grid screenshot
+│   ├── asset-detail-modal.png  # EXIF metadata detail modal screenshot
+│   ├── album-collections.png   # Album folder view screenshot
+│   ├── favorites-vault.png     # Favorites collection screenshot
+│   └── site.webmanifest
 ├── src/
 │   ├── app/
 │   │   ├── albums/             # Album collections & folder details
@@ -63,19 +84,18 @@ lumina-cloud-gallery/
 │   │   │   └── page.tsx        # Album management & folder grid
 │   │   ├── favourites/         # Favorites curated vault route
 │   │   ├── components/
-│   │   │   ├── Navbar.tsx            # Header with search & theme toggle
+│   │   │   ├── Navbar.tsx            # Header with theme toggle
 │   │   │   ├── Side_Nav.tsx          # Navigation sidebar
 │   │   │   ├── CloudinaryImage.tsx   # Responsive image card primitive
-│   │   │   ├── ImageDetailModal.tsx  # EXIF metadata, download, album move modal
+│   │   │   ├── ImageDetailModal.tsx  # EXIF metadata & album move modal
 │   │   │   ├── MediaContext.tsx      # Media state provider & Cloudinary sync
 │   │   │   ├── FavoritesContext.tsx  # Cloudinary tag-driven favorites provider
 │   │   │   ├── ThemeContext.tsx      # Light/Dark mode state provider
 │   │   │   ├── upload_btn.tsx        # Cloudinary upload component
-│   │   │   ├── Get_data.tsx          # Cloudinary server actions
-│   │   │   └── sampleData.ts         # Fallback data definitions
+│   │   │   └── Get_data.tsx          # Cloudinary server actions
 │   │   ├── globals.css               # Design system tokens & utilities
 │   │   ├── layout.tsx                # Context providers & OpenGraph metadata
-│   │   └── page.tsx                  # Main gallery masonry grid & category filters
+│   │   └── page.tsx                  # Main gallery masonry grid & search bar
 │   ├── components/
 │   │   ├── button.tsx                # Button UI component
 │   │   └── ui/                       # Dialog & input primitives

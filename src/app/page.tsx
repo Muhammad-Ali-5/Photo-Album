@@ -5,7 +5,7 @@ import Navbar from "./components/Navbar";
 import Side_Nav from "./components/Side_Nav";
 import CloudinaryImage from "./components/cloudinary-image";
 import ImageDetailModal from "./components/ImageDetailModal";
-import { Layers, SlidersHorizontal, Image as ImageIcon } from "lucide-react";
+import { Layers, SlidersHorizontal, Image as ImageIcon, Search, X } from "lucide-react";
 import { Button } from "@/components/button";
 import { useTheme } from "./components/ThemeContext";
 import { useMedia } from "./components/MediaContext";
@@ -41,10 +41,7 @@ export default function Home() {
 
   return (
     <div className={`min-h-screen flex flex-col ${isDark ? "bg-[#09090b] text-zinc-100" : "bg-white text-zinc-900"}`}>
-      <Navbar
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-      />
+      <Navbar />
 
       <div className="flex-1 flex flex-col md:flex-row">
         <Side_Nav />
@@ -67,26 +64,56 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Category Tag Pills */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-            <SlidersHorizontal className="size-4 text-zinc-400 mr-1 shrink-0" />
-            {tagCategories.map((tag) => (
-              <button
-                key={tag}
-                onClick={() => setSelectedTag(tag)}
-                className={`px-4 py-1.5 rounded-full text-xs font-semibold tracking-wider transition-all cursor-pointer shrink-0 ${
-                  selectedTag === tag
-                    ? isDark
-                      ? "bg-white text-black font-bold shadow-sm"
-                      : "bg-black text-white font-bold shadow-sm"
-                    : isDark
-                    ? "bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800"
-                    : "bg-zinc-100 hover:bg-zinc-200 text-zinc-700 border border-zinc-300"
+          {/* Search Bar & Category Tag Filters */}
+          <div className="space-y-4">
+            {/* Search Input Bar */}
+            <div className="relative max-w-xl">
+              <Search className={`absolute left-3.5 top-1/2 -translate-y-1/2 size-4 ${isDark ? "text-zinc-400" : "text-zinc-500"}`} />
+              <input
+                type="text"
+                placeholder="Search assets by tag, filename, or format..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className={`w-full pl-10 pr-10 py-2.5 text-xs rounded-full outline-none transition-all ${
+                  isDark
+                    ? "bg-zinc-900 border border-zinc-800 text-white placeholder-zinc-500 focus:border-zinc-500 shadow-inner"
+                    : "bg-zinc-50 border border-zinc-300 text-zinc-900 placeholder-zinc-400 focus:border-zinc-500 shadow-sm"
                 }`}
-              >
-                {tag}
-              </button>
-            ))}
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className={`absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-xs transition-colors cursor-pointer ${
+                    isDark ? "text-zinc-400 hover:text-white" : "text-zinc-500 hover:text-black"
+                  }`}
+                  title="Clear Search"
+                >
+                  <X className="size-3.5" />
+                </button>
+              )}
+            </div>
+
+            {/* Category Tag Pills */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+              <SlidersHorizontal className="size-4 text-zinc-400 mr-1 shrink-0" />
+              {tagCategories.map((tag) => (
+                <button
+                  key={tag}
+                  onClick={() => setSelectedTag(tag)}
+                  className={`px-4 py-1.5 rounded-full text-xs font-semibold tracking-wider transition-all cursor-pointer shrink-0 ${
+                    selectedTag === tag
+                      ? isDark
+                        ? "bg-white text-black font-bold shadow-sm"
+                        : "bg-black text-white font-bold shadow-sm"
+                      : isDark
+                      ? "bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800"
+                      : "bg-zinc-100 hover:bg-zinc-200 text-zinc-700 border border-zinc-300"
+                  }`}
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Gallery Masonry Grid */}
@@ -106,13 +133,21 @@ export default function Home() {
             </div>
           ) : (
             /* Empty State */
-            <div className="py-16 text-center space-y-3 glass-panel rounded-3xl border-dashed border-zinc-800 p-8 max-w-md mx-auto">
-              <div className="size-12 mx-auto rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400">
+            <div className={`py-16 text-center space-y-3 rounded-3xl border-2 border-dashed p-8 max-w-md mx-auto transition-colors ${
+              isDark
+                ? "bg-zinc-900/50 border-zinc-800 text-zinc-100"
+                : "bg-zinc-50/80 border-zinc-300 text-zinc-900 shadow-sm"
+            }`}>
+              <div className={`size-12 mx-auto rounded-full border flex items-center justify-center ${
+                isDark
+                  ? "bg-zinc-900 border-zinc-800 text-zinc-400"
+                  : "bg-zinc-100 border-zinc-300 text-zinc-600"
+              }`}>
                 <ImageIcon className="size-6" />
               </div>
-              <h3 className="text-base font-bold">No Matching Assets Found</h3>
-              <p className="text-xs text-zinc-400">
-                Try searching for another tag like <span className="font-mono">architecture</span> or clear filters.
+              <h3 className={`text-base font-bold ${isDark ? "text-white" : "text-zinc-900"}`}>No Matching Assets Found</h3>
+              <p className={`text-xs ${isDark ? "text-zinc-400" : "text-zinc-600"}`}>
+                Try searching for another tag like <span className="font-mono font-semibold">architecture</span> or clear filters.
               </p>
               <Button
                 variant="secondary"
@@ -121,7 +156,7 @@ export default function Home() {
                   setSelectedTag("All");
                   setSearchQuery("");
                 }}
-                className="mt-2 rounded-full text-xs"
+                className={isDark ? "mt-2 rounded-full text-xs" : "mt-2 rounded-full text-xs bg-zinc-200 hover:bg-zinc-300 text-zinc-900 border-zinc-300"}
               >
                 Clear Search Filters
               </Button>
