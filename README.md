@@ -5,10 +5,11 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
 [![Cloudinary](https://img.shields.io/badge/Cloudinary-CDN-blueviolet?style=for-the-badge&logo=cloudinary)](https://cloudinary.com/)
 [![Framer Motion](https://img.shields.io/badge/Framer_Motion-11.5-purple?style=for-the-badge&logo=framer)](https://www.framer.com/motion/)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-lumina--cloud--gallery.vercel.app-000000?style=for-the-badge&logo=vercel)](https://lumina-cloud-gallery.vercel.app)
 
 Lumina is a production-grade **Digital Asset Management & Cloud Gallery Platform** built with Next.js 14, TypeScript, Tailwind CSS, Cloudinary, and Framer Motion. It offers high-performance cloud photo streaming, tag-based curation, and asset metadata inspection.
 
-> ℹ️ **Live Review Note**: Lumina features an automatic high-resolution sample gallery fallback mode. When Cloudinary API credentials aren't configured locally, reviewers can seamlessly explore photography assets, filter by tags (`Nature`, `Architecture`, `Cyberpunk`, `Minimalist`), inspect EXIF metadata, and test favorites collections without setup friction.
+> 🌐 **Live Web Application**: <a href="https://lumina-cloud-gallery.vercel.app" target="_blank" rel="noopener noreferrer">https://lumina-cloud-gallery.vercel.app</a>
 
 ---
 
